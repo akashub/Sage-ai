@@ -12,7 +12,7 @@ Data analysts and business users often struggle with writing complex SQL queries
 - **Sudiksha Rajavaram** - Frontend Dev
 - **Yash Kishore** - Frontend Dev
 
-## Initial Proposed Project Architecture
+## Initial Proposed AI-System Architecture
 
 ![image](https://github.com/user-attachments/assets/9c4f7a92-efd0-44b8-9bce-89bd524722d5)
 
