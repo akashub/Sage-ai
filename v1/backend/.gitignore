@@ -50,3 +50,5 @@ htmlcov/
 .cache
 coverage.xml
 *.cover
+
+backend/app/data/Imdb Movie Dataset.csv

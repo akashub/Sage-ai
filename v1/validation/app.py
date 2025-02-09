@@ -65,7 +65,7 @@ def create_prompt(table_name, columns_info):
     """
 
 # Streamlit App
-st.set_page_config(page_title="Sage-AI V1 Demo: Dynamic SQL Query Assistant")
+st.set_page_config(page_title="Sage-AI Demo V1: Dynamic SQL Query Assistant")
 st.title("Sage-AI V1: LLM-Based Dynamic SQL Query Assistant")
 
 # File uploader
