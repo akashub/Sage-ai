@@ -1,47 +1,4 @@
-
-# # app/knowledge/few_shot.py
-# from typing import List, Optional
-# from langchain_openai import ChatOpenAI
-# from .base import Example, KnowledgeBase
-
-# class FewShotLearner:
-#     def __init__(self, llm: ChatOpenAI, knowledge_base: KnowledgeBase):
-#         self.llm = llm
-#         self.knowledge_base = knowledge_base
-
-#     def _format_examples(self, examples: List[Example]) -> str:
-#         """Format examples for prompt"""
-#         formatted = ""
-#         for i, ex in enumerate(examples, 1):
-#             formatted += f"Example {i}:\n"
-#             formatted += f"Natural Query: {ex.natural_query}\n"
-#             formatted += f"Schema Context: {ex.schema_context}\n"
-#             formatted += f"SQL Query: {ex.sql_query}\n\n"
-#         return formatted
-
-#     async def generate_sql(self, query: str, schema: Optional[str] = None) -> str:
-#         """Generate SQL using few-shot learning"""
-#         # Get similar examples
-#         similar_examples = self.knowledge_base.get_similar_examples(query, schema)
-        
-#         # Format prompt with examples
-#         prompt = f"""Given the following examples and schema, convert the natural language query to SQL.
-
-# {self._format_examples(similar_examples)}
-
-# Current Schema: {schema or 'Not provided'}
-# Natural Query: {query}
-
-# Generate a SQL query following the patterns shown in the examples above.
-# SQL Query:"""
-
-#         # Generate SQL using LLM
-#         response = await self.llm.ainvoke(prompt)
-#         return response.content.strip()
-
-
-# app/knowledge/few_shot.py
-# app/knowledge/few_shot.py
+# v1/backend/app/knowledge/few_shot.py
 import asyncio
 from typing import List, Dict, Any, Optional
 import json

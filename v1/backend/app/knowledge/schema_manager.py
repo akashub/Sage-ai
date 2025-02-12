@@ -1,4 +1,4 @@
-# app/knowledge/schema_manager.py
+# v1/backend/app/knowledge/schema_manager.py
 from typing import Dict, Optional
 import json
 

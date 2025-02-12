@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  go-backend:
+    build: 
+      context: ../backend/go
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - GO_ENV=development
+      - PYTHON_SERVICE_URL=http://python-llm:8000
+    volumes:
+      - ../backend/go:/app
+    depends_on:
+      - python-llm
+
+  python-llm:
+    build:
+      context: ../backend/python
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - LOG_LEVEL=INFO
+    volumes:
+      - ../backend/python:/app

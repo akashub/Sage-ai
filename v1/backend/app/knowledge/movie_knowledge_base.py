@@ -1,4 +1,4 @@
-# app/knowledge/movie_knowledge_base.py
+# v1/backend/app/knowledge/movie_knowledge_base.py
 from typing import Dict, List, Any, Optional
 from .base import KnowledgeBase, QueryPattern
 from langchain_openai import OpenAIEmbeddings

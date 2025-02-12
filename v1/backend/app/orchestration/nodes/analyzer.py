@@ -1,47 +1,4 @@
-# # app/orchestration/nodes/analyzer.py
-# from typing import Dict, Any, Optional
-# from langchain_openai import ChatOpenAI
-# from pydantic import BaseModel
-
-# class AnalyzerNode:
-#     def __init__(self, llm: Optional[ChatOpenAI] = None):
-#         self.llm = llm or ChatOpenAI(temperature=0)
-
-#     async def analyze(self, question: str, schema: Optional[str] = None) -> Dict[str, Any]:
-#         """Analyze natural language query to understand intent"""
-#         try:
-#             prompt = f"""Analyze this natural language query for SQL conversion.
-#             Question: {question}
-            
-#             Schema Context (if available):
-#             {schema or 'No schema provided'}
-            
-#             Provide analysis in JSON format:
-#             {{
-#                 "query_type": "select/insert/update/delete",
-#                 "tables": ["required_tables"],
-#                 "columns": ["required_columns"],
-#                 "conditions": ["where_conditions"],
-#                 "joins": ["needed_joins"],
-#                 "aggregations": ["any_aggregations"],
-#                 "group_by": ["group_columns"],
-#                 "order_by": ["order_columns"],
-#                 "limit": optional_limit_value
-#             }}
-#             """
-            
-#             response = await self.llm.ainvoke(prompt)
-#             return {
-#                 "success": True,
-#                 "analysis": response.content,
-#                 "error": None
-#             }
-#         except Exception as e:
-#             return {
-#                 "success": False,
-#                 "analysis": None,
-#                 "error": f"Analysis failed: {str(e)}"
-#             }
+#  v1/backend/app/orchestration/nodes/analyzer.py
 
 from typing import Dict, Any, Optional, List
 from langchain_openai import ChatOpenAI
