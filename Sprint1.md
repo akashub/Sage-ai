@@ -6,7 +6,7 @@ Sage-AI v2 represents a significant evolution in natural language to SQL query c
 ## 🏗️ Architecture and Components
 
 ### High-Level Architecture
-![High Level Architecture Diagram](./Sage-ai-v2-Highleveldiagram.png)
+![High Level Architecture Diagram](./readme_assets/Sage-ai-v2-Highleveldiagram.png)
 
 Our system follows a hybrid architecture where the core business logic resides in Go while leveraging Python's machine learning capabilities through a bridge pattern. The system comprises three main layers:
 
@@ -29,7 +29,7 @@ Our system follows a hybrid architecture where the core business logic resides i
    - Ensures data integrity
 
 ### Low-Level Component Interaction
-![Low Level Flow Diagram](./Sage-ai-v2-lowleveldiagram.png)
+![Low Level Flow Diagram](./readme_assets/Sage-ai-v2-lowleveldiagram.png)
 
 The system processes queries through a sophisticated pipeline:
 
