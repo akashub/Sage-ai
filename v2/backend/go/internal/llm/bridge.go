@@ -395,38 +395,14 @@ func (b *Bridge) Analyze(ctx context.Context, question string, schema map[string
     return analyzeResp.Analysis, nil
 }
 
-// func (b *Bridge) GenerateQuery(ctx context.Context, analysis map[string]interface{}, schema map[string]interface{}) (string, error) {
-//     req := GenerateQueryRequest{
-//         Analysis: analysis,
-//         Schema:   schema,
-//     }
-
-//     resp, err := b.makeRequest(ctx, "/generate", req, b.sessionID)
-//     if err != nil {
-//         return "", fmt.Errorf("error making generate request: %w", err)
-//     }
-
-//     var genResponse GenerateQueryResponse
-//     if err := json.Unmarshal(resp, &genResponse); err != nil {
-//         return "", fmt.Errorf("error unmarshaling generate response: %w", err)
-//     }
-
-//     if genResponse.Error != "" {
-//         return "", fmt.Errorf("LLM error: %s", genResponse.Error)
-//     }
-
-//     return genResponse.Query, nil
-// }
 func (b *Bridge) GenerateQuery(ctx context.Context, analysis map[string]interface{}, schema map[string]interface{}) (string, error) {
     logger.InfoLogger.Printf("Bridge: Making generate request")
     logger.DebugLogger.Printf("Analysis: %+v", analysis)
     logger.DebugLogger.Printf("Schema: %+v", schema)
 
-    // Create request with correct structure
     requestData := map[string]interface{}{
-        "analysis":    analysis,
-        "schema":     schema,
-        "session_id": b.sessionID,
+        "analysis": analysis,
+        "schema":  schema,
     }
 
     resp, err := b.makeRequest(ctx, "/generate", requestData, b.sessionID)
@@ -443,24 +419,24 @@ func (b *Bridge) GenerateQuery(ctx context.Context, analysis map[string]interfac
         return "", fmt.Errorf("error unmarshaling generate response: %w", err)
     }
 
-    logger.InfoLogger.Printf("Query generation completed successfully")
-    logger.DebugLogger.Printf("Generated query: %s", genResponse.Query)
     return genResponse.Query, nil
 }
 
 func (b *Bridge) ValidateQuery(ctx context.Context, query string, schema map[string]interface{}) (map[string]interface{}, error) {
-    req := map[string]interface{}{
+    requestData := map[string]interface{}{
         "query":  query,
         "schema": schema,
     }
 
-    resp, err := b.makeRequest(ctx, "/validate", req, b.sessionID)
+    resp, err := b.makeRequest(ctx, "/validate", requestData, b.sessionID)
     if err != nil {
+        logger.ErrorLogger.Printf("Validate request failed: %v", err)
         return nil, fmt.Errorf("error making validate request: %w", err)
     }
 
     var validation map[string]interface{}
     if err := json.Unmarshal(resp, &validation); err != nil {
+        logger.ErrorLogger.Printf("Failed to unmarshal validation response: %v", err)
         return nil, fmt.Errorf("error unmarshaling validation response: %w", err)
     }
 
@@ -509,24 +485,23 @@ func (b *Bridge) ValidateQuery(ctx context.Context, query string, schema map[str
 
 //     return respBody.Bytes(), nil
 // }
-func (b *Bridge) makeRequest(ctx context.Context, endpoint string, payload interface{}, sessionID string) ([]byte, error) {
+func (b *Bridge) makeRequest(ctx context.Context, endpoint string, requestData interface{}, sessionID string) ([]byte, error) {
     logger.InfoLogger.Printf("Making request to endpoint: %s", endpoint)
+    logger.DebugLogger.Printf("Request payload: %s", requestData)
 
-	ctx, cancel := context.WithTimeout(ctx, 110*time.Second)
+    ctx, cancel := context.WithTimeout(ctx, 110*time.Second)
     defer cancel()
-    
-    requestData := map[string]interface{}{
+
+    wrappedRequest := map[string]interface{}{
         "session_id": sessionID,
-        "data":      payload,
+        "data":      requestData,
     }
 
-    jsonData, err := json.Marshal(requestData)
+    jsonData, err := json.Marshal(wrappedRequest)
     if err != nil {
         logger.ErrorLogger.Printf("Failed to marshal request: %v", err)
         return nil, fmt.Errorf("error marshaling request: %w", err)
     }
-
-    logger.DebugLogger.Printf("Request payload: %s", string(jsonData))
 
     req, err := http.NewRequestWithContext(
         ctx,
