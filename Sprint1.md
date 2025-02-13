@@ -4,6 +4,8 @@
 Sage-AI is a natural language to SQL query conversion tool with dynamic output generation and interactivity, designed to make database querying accessible to users without deep SQL knowledge. Its unique plug-and-play architecture can dynamically integrate various data sources (APIs, hyperlinks, files, etc.) along with their schemas, making it highly versatile. 
 Sprint 1 has laid the foundation through two parallel tracks: a sophisticated backend combining Go's robustness with Python's AI capabilities, featuring natural language processing, query generation, and healing mechanisms; and a modern, responsive React frontend providing an intuitive user interface with real-time query execution feedback. While these components are currently developed independently, they establish the groundwork for a powerful, user-friendly query system.
 
+Please find our Frontend and Backend demo videos here [Sprint 1 Demo Videos](https://uflorida-my.sharepoint.com/:f:/g/personal/yashkishore_ufl_edu/ElJmHJX7_MZOnXux4XqXZMwBFZym0c6I1-c2zmHlxkS77Q?e=b3KxO3)
+
 ## Frontend Implementation
 
 ![Homepage Demo](./readme_assets/HomePage.gif)
