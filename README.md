@@ -1,5 +1,5 @@
 # Sage.AI - Natural Language SQL Query Assistant
-## (To be updated post-Sprint 1)
+
 ## Description
 Sage.AI is an intelligent system that transforms natural language into SQL queries using LLMs and few-shot learning. It executes queries and presents results through an interactive chatbot interface, maintaining context for follow-ups while adapting to different database schemas. We eventually aim to make it data-agnostic so that Sage.ai is a one stop solution for all kinds of use-cases.
  
@@ -49,6 +49,8 @@ The AI system consists of three main layers:
 
 ## 🌟 Overview
 Sprint 1 has laid the foundation through two parallel tracks: a sophisticated backend combining Go's robustness with Python's AI capabilities, featuring natural language processing, query generation, and healing mechanisms; and a modern, responsive React frontend providing an intuitive user interface with real-time query execution feedback. While these components are currently developed independently, they establish the groundwork for a powerful, user-friendly query system.
+
+Please find our Frontend and Backend demo videos here [Sprint 1 Demo Videos](https://uflorida-my.sharepoint.com/:f:/g/personal/yashkishore_ufl_edu/ElJmHJX7_MZOnXux4XqXZMwBFZym0c6I1-c2zmHlxkS77Q?e=b3KxO3)
 
 ## Frontend Implementation
 
