@@ -52,6 +52,8 @@ Sprint 1 has laid the foundation through two parallel tracks: a sophisticated ba
 
 Please find our Frontend and Backend demo videos here [Sprint 1 Demo Videos](https://uflorida-my.sharepoint.com/:f:/g/personal/yashkishore_ufl_edu/ElJmHJX7_MZOnXux4XqXZMwBFZym0c6I1-c2zmHlxkS77Q?e=b3KxO3)
 
+### Note :- v1 was our initial version of Sage-ai with its complete backend in Python and FastAPI, after having a conversation with Prof. Alin Dobra we decided to pivot towards v2 with Golang + Python(for LLM calling) for our backend.
+
 ## Frontend Implementation
 
 ![Homepage Demo](./readme_assets/HomePage.gif)
