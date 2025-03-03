@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Link as RouterLink } from "react-router-dom"
 import {
   AppBar,
   Toolbar,
@@ -15,6 +16,7 @@ import {
 } from "@mui/material"
 import { styled, useTheme } from "@mui/material/styles"
 import { Apps, ArrowOutward, Menu as MenuIcon } from "@mui/icons-material"
+import { useAuth } from "../auth/AuthContext"
 
 const StyledAppBar = styled(AppBar)(({ theme }) => ({
   background: "transparent",
@@ -33,6 +35,11 @@ const Navigation = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
+  const { openAuthModal } = useAuth()
+
+  const handleClick = () => {
+    openAuthModal()
+  }
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
@@ -74,6 +81,8 @@ const Navigation = () => {
         ))}
         <ListItem disablePadding>
           <Button
+            component={RouterLink}
+            to="/chat"
             fullWidth
             variant="outlined"
             startIcon={<Apps />}
@@ -94,6 +103,7 @@ const Navigation = () => {
           <Button
             fullWidth
             variant="contained"
+            onClick={handleClick}
             sx={{
               m: 1,
               backgroundColor: "white",
@@ -127,6 +137,8 @@ const Navigation = () => {
               </NavButton>
             ))}
             <Button
+              component={RouterLink}
+              to="/chat"
               variant="outlined"
               startIcon={<Apps />}
               sx={{
@@ -142,6 +154,7 @@ const Navigation = () => {
             </Button>
             <Button
               variant="contained"
+              onClick={handleClick}
               sx={{
                 backgroundColor: "white",
                 color: "background.default",
@@ -183,7 +196,7 @@ const Navigation = () => {
           open={mobileOpen}
           onClose={handleDrawerToggle}
           ModalProps={{
-            keepMounted: true, // Better open performance on mobile.
+            keepMounted: true,
           }}
           sx={{
             display: { xs: "block", md: "none" },

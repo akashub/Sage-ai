@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Box, Typography, Button, Container } from "@mui/material";
 import { keyframes } from "@mui/system";
 import { PlayArrow, Code } from "@mui/icons-material";
+import { useAuth } from "../auth/AuthContext";
 
 const gradientText = keyframes`
   0% { background-position: 0% 50%; }
@@ -75,7 +76,11 @@ const FloatingCode = ({ code, position, rotation, delay }) => (
   </Box>
 );
 
-const HeroSection = ({ onAuthOpen }) => {
+const HeroSection = () => {
+  const { openAuthModal } = useAuth()
+  const handleClick = ()=> {
+    openAuthModal();
+  }
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -140,9 +145,10 @@ const HeroSection = ({ onAuthOpen }) => {
           <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
             <Button
               variant="contained"
+              onClick={handleClick}
               size="large"
               startIcon={<Code />}
-              onClick={onAuthOpen}
+              // onClick={onAuthOpen}
               sx={{
                 backgroundColor: "white",
                 color: "background.default",
