@@ -1,6 +1,7 @@
 import { Box, Container, Grid, Typography, Button, Link, Stack } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import { Apps, ArrowOutward, GitHub, Twitter, LinkedIn } from "@mui/icons-material"
+import { useAuth } from "../auth/AuthContext"
 
 const StyledLink = styled(Link)(({ theme }) => ({
   color: "rgba(255, 255, 255, 0.7)",
@@ -13,6 +14,11 @@ const StyledLink = styled(Link)(({ theme }) => ({
 
 const Footer = () => {
   const currentYear = new Date().getFullYear()
+  const { openAuthModal } = useAuth()
+
+  const handleClick = ()=> {
+    openAuthModal();
+  }
 
   return (
     <Box
@@ -102,6 +108,7 @@ const Footer = () => {
               </Button>
               <Button
                 variant="contained"
+                onClick={handleClick}
                 endIcon={<ArrowOutward />}
                 sx={{
                   backgroundColor: 'white',

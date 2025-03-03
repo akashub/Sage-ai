@@ -3,12 +3,15 @@
 import { Box, Typography, Container, Button, Avatar, AvatarGroup } from "@mui/material"
 import { useInView } from "react-intersection-observer"
 import { ArrowOutward } from "@mui/icons-material"
+import { useAuth } from "../auth/AuthContext"
 
 const EarlyAccessSection = ({ onAuthOpen }) => {
   const { ref, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   })
+
+  const { openAuthModal } = useAuth()
 
   return (
     <Box
@@ -93,7 +96,7 @@ const EarlyAccessSection = ({ onAuthOpen }) => {
               variant="contained"
               size="large"
               endIcon={<ArrowOutward />}
-              onClick={onAuthOpen}
+              onClick={openAuthModal}
               sx={{
                 backgroundColor: "#5865F2",
                 color: "white",
