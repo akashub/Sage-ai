@@ -1,31 +1,33 @@
 // backend/go/internal/api/routes.go
+// backend/go/internal/api/routes.go
 package api
 
 import (
-    "net/http"
-    "sage-ai-v2/internal/api/handlers"
-    "sage-ai-v2/internal/orchestrator"
+	"net/http"
+	"sage-ai-v2/internal/api/handlers"
+	"sage-ai-v2/internal/api/middleware"
+	"sage-ai-v2/pkg/logger"
 )
 
-type Router struct {
-    *http.ServeMux
-    queryHandler  *handlers.QueryHandler
-    uploadHandler *handlers.UploadHandler
-}
+// SetupRoutes configures all API routes for the application
+func SetupRoutes() http.Handler {
+	// Create a new ServeMux
+	mux := http.NewServeMux()
 
-func CreateRouter(orch *orchestrator.Orchestrator) *Router {
-    r := &Router{
-        ServeMux:      http.NewServeMux(),
-        queryHandler:  handlers.CreateQueryHandler(orch),
-        uploadHandler: handlers.CreateUploadHandler("./uploads"),
-    }
+	// Register API routes
+	mux.HandleFunc("/api/upload", handlers.UploadFileHandler)
+	mux.HandleFunc("/api/query", handlers.QueryHandler)
 
-    r.setupRoutes()
-    return r
-}
+	// Add health check endpoint
+	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
-func (r *Router) setupRoutes() {
-    // API endpoints
-    r.Handle("/api/query", http.HandlerFunc(r.queryHandler.Handle))
-    r.Handle("/api/upload", http.HandlerFunc(r.uploadHandler.Handle))
+	// Apply middleware to all routes
+	handler := middleware.ApplyAuth(mux)
+
+	logger.InfoLogger.Printf("API routes configured")
+	return handler
 }

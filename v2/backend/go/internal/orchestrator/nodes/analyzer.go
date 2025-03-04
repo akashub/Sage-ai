@@ -11,6 +11,7 @@ import (
 	"sage-ai-v2/pkg/logger"
 	"strconv"
 	"time"
+    "strings"
 )
 
 type Analyzer struct {
@@ -54,9 +55,30 @@ func (a *Analyzer) Execute(ctx context.Context, state *types.State) error {
 }
 
 func (a *Analyzer) extractSchema(csvPath string) (map[string]interface{}, error) {
+    // Ensure the path is properly formed
+    if csvPath == "" {
+        return nil, fmt.Errorf("empty CSV path provided")
+    }
+    
+    // Debug the current working directory
+    currentDir, _ := os.Getwd()
+    logger.InfoLogger.Printf("Current working directory: %s", currentDir)
+    logger.InfoLogger.Printf("Attempting to open CSV at path: %s", csvPath)
+    
+    // Try to open the file
     file, err := os.Open(csvPath)
     if err != nil {
-        return nil, err
+        // If the path doesn't start with "./", try prepending it
+        if !strings.HasPrefix(csvPath, "./") && !strings.HasPrefix(csvPath, "/") {
+            altPath := "./" + csvPath
+            logger.InfoLogger.Printf("First attempt failed, trying alternative path: %s", altPath)
+            file, err = os.Open(altPath)
+            if err != nil {
+                return nil, fmt.Errorf("failed to open CSV file at both %s and %s: %w", csvPath, altPath, err)
+            }
+        } else {
+            return nil, err
+        }
     }
     defer file.Close()
 
