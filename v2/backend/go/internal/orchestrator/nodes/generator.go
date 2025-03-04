@@ -17,20 +17,6 @@ func CreateGenerator(bridge *llm.Bridge) NodeExecutor {
     return &Generator{bridge: bridge}
 }
 
-// func (g *Generator) Execute(ctx context.Context, state *types.State) error {
-//     if state.Analysis == nil {
-//         return fmt.Errorf("no analysis available for query generation")
-//     }
-
-//     query, err := g.bridge.GenerateQuery(ctx, state.Analysis, state.Schema)
-//     if err != nil {
-//         return err
-//     }
-
-//     state.GeneratedQuery = query
-//     return nil
-// }
-
 func (g *Generator) Execute(ctx context.Context, state *types.State) error {
     logger.InfoLogger.Printf("Generator Node: Starting SQL generation")
     

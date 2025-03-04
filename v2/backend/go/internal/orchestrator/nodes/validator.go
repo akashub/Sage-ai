@@ -18,20 +18,6 @@ func CreateValidator(bridge *llm.Bridge) NodeExecutor {
     return &Validator{bridge: bridge}
 }
 
-// func (v *Validator) Execute(ctx context.Context, state *types.State) error {
-//     if state.GeneratedQuery == "" {
-//         return fmt.Errorf("no query available for validation")
-//     }
-
-//     validation, err := v.bridge.ValidateQuery(ctx, state.GeneratedQuery, state.Schema)
-//     if err != nil {
-//         return err
-//     }
-
-//     state.ValidationResult = validation
-//     return nil
-// }
-
 func (v *Validator) Execute(ctx context.Context, state *types.State) error {
     logger.InfoLogger.Printf("Validator Node: Starting query validation")
 

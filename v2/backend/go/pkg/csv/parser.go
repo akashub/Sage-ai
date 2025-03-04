@@ -155,12 +155,6 @@ func (p *Parser) NewSession() {
 	delete(p.cache, p.sessionID)
 }
 
-// func (p *Parser) ClearSession() {
-//     if _, exists := p.cache[p.sessionID]; exists {
-//         delete(p.cache, p.sessionID)
-//     }
-// }
-
 type QueryInfo struct {
 	SelectColumns []string
 	OrderBy       string
@@ -169,43 +163,11 @@ type QueryInfo struct {
 	Conditions    []string
 }
 
-// func (p *Parser) ClearCache() {
-//     logger.InfoLogger.Printf("CSV Parser: Clearing cache")
-//     p.cache = make(map[string][][]string)
-// }
 
 func generateSessionID() string {
 	return fmt.Sprintf("session_%d", time.Now().UnixNano())
 }
 
-// func (p *Parser) readCSV(path string) ([][]string, error) {
-//     // Check cache first
-//     if data, exists := p.cache[path]; exists {
-//         return data, nil
-//     }
-
-//     // Open and read the file
-//     file, err := os.Open(path)
-//     if err != nil {
-//         return nil, fmt.Errorf("error opening file: %w", err)
-//     }
-//     defer file.Close()
-
-//     // Create CSV reader
-//     reader := csv.NewReader(file)
-//     reader.FieldsPerRecord = -1  // Allow variable number of fields
-//     reader.TrimLeadingSpace = true
-
-//     // Read all records
-//     data, err := reader.ReadAll()
-//     if err != nil {
-//         return nil, fmt.Errorf("error reading CSV: %w", err)
-//     }
-
-//	    // Cache the data
-//	    p.cache[path] = data
-//	    return data, nil
-//	}
 func (p *Parser) readCSV(path string) ([][]string, error) {
 	// Check session cache first
 	if sessionCache, ok := p.cache[p.sessionID]; ok {
@@ -236,31 +198,9 @@ func (p *Parser) readCSV(path string) ([][]string, error) {
 	return data, nil
 }
 
-// func (p *Parser) ExecuteQuery(csvPath string, query string) (interface{}, error) {
-//     // Read data
-//     data, err := p.readCSV(csvPath)
-//     if err != nil {
-//         return nil, fmt.Errorf("error reading CSV: %w", err)
-//     }
 
-//     if len(data) < 2 { // Header + at least one row
-//         return nil, fmt.Errorf("insufficient data in CSV")
-//     }
-
-//     headers := data[0]
-//     rows := data[1:]
-
-//     // Parse the SQL query to extract needed columns
-//     queryInfo := p.parseQuery(query, headers)
-
-//     // Process and return results
-//     results := p.processQuery(headers, rows, queryInfo)
-//     return results, nil
-// }
 
 func (p *Parser) ExecuteQuery(csvPath string, query string) (interface{}, error) {
-	// Clearing cache before executing a new query
-	// p.ClearCache()
 	logger.InfoLogger.Printf("CSV Parser: Starting query execution")
 	logger.InfoLogger.Printf("Query: %s", query)
 
@@ -288,98 +228,6 @@ func (p *Parser) ExecuteQuery(csvPath string, query string) (interface{}, error)
 	return results, nil
 }
 
-// func (p *Parser) parseQuery(query string, headers []string) QueryInfo {
-//     // Extract columns from SELECT clause
-//     selectStr := strings.ToLower(query)
-//     selectColumns := []string{}
-
-//     if strings.Contains(selectStr, "select") {
-//         // Extract columns between SELECT and FROM
-//         selectPart := strings.Split(strings.Split(selectStr, "from")[0], "select")[1]
-//         columns := strings.Split(selectPart, ",")
-//         for _, col := range columns {
-//             col = strings.TrimSpace(col)
-//             // Convert to actual column name from headers
-//             for _, header := range headers {
-//                 if strings.ToLower(header) == col {
-//                     selectColumns = append(selectColumns, header)
-//                 }
-//             }
-//         }
-//     }
-
-//     // If no valid columns found, add essential columns
-//     if len(selectColumns) == 0 {
-//         selectColumns = []string{"title", "revenue"}
-//         if strings.Contains(strings.ToLower(query), "summary") ||
-//            strings.Contains(strings.ToLower(query), "overview") {
-//             selectColumns = append(selectColumns, "overview")
-//         }
-//     }
-
-//     return QueryInfo{
-//         SelectColumns: selectColumns,
-//         OrderBy:      "revenue",
-//         OrderDesc:    true,
-//         Limit:        1,
-//     }
-// }
-
-// func (p *Parser) processQuery(headers []string, rows [][]string, query QueryInfo) []map[string]interface{} {
-//     // Get column indexes
-//     colIndexes := make(map[string]int)
-//     for i, header := range headers {
-//         colIndexes[header] = i
-//     }
-
-//     // Convert rows to records
-//     var records []map[string]interface{}
-//     for _, row := range rows {
-//         if len(row) != len(headers) {
-//             continue // Skip malformed rows
-//         }
-
-//         record := make(map[string]interface{})
-//         for _, col := range query.SelectColumns {
-//             if idx, ok := colIndexes[col]; ok && idx < len(row) {
-//                 value := row[idx]
-//                 if col == "revenue" {
-//                     if rev, err := strconv.ParseFloat(value, 64); err == nil && rev > 0 {
-//                         record[col] = rev
-//                     }
-//                 } else {
-//                     record[col] = value
-//                 }
-//             }
-//         }
-
-//         // Only add records with valid revenue
-//         if revenue, ok := record["revenue"].(float64); ok && revenue > 0 {
-//             records = append(records, record)
-//         }
-//     }
-
-//     // Sort by revenue
-//     sort.Slice(records, func(i, j int) bool {
-//         return records[i]["revenue"].(float64) > records[j]["revenue"].(float64)
-//     })
-
-//     // Apply limit
-//     if query.Limit > 0 && query.Limit < len(records) {
-//         records = records[:query.Limit]
-//     }
-
-//     // Format revenue for display
-//     for _, record := range records {
-//         if revenue, ok := record["revenue"].(float64); ok {
-//             record["revenue"] = fmt.Sprintf("$%.2f Million", revenue/1000000)
-//         }
-//     }
-
-//     return records
-// }
-
-// backend/go/pkg/csv/parser.go
 func (p *Parser) parseQuery(query string, headers []string) QueryInfo {
 	logger.InfoLogger.Printf("CSV Parser: Parsing query: %s", query)
 
@@ -388,7 +236,6 @@ func (p *Parser) parseQuery(query string, headers []string) QueryInfo {
 	orderBy := "revenue" // Default
 	var conditions []string
 
-	// Initialize limit to -1 (no limit) instead of hardcoded 10
 	limit := -1
 
 	// Extract WHERE conditions
@@ -445,93 +292,6 @@ func (p *Parser) parseQuery(query string, headers []string) QueryInfo {
 		Conditions:    conditions,
 	}
 }
-
-// func (p *Parser) processQuery(headers []string, rows [][]string, query QueryInfo) []map[string]interface{} {
-//     logger.InfoLogger.Printf("CSV Parser: Processing query with limit %d", query.Limit)
-
-//     // Get column indexes
-//     colIndexes := make(map[string]int)
-//     for i, header := range headers {
-//         colIndexes[header] = i
-//     }
-
-//     // Convert rows to records
-//     var records []map[string]interface{}
-//     for _, row := range rows {
-//         if len(row) != len(headers) {
-//             continue // Skip malformed rows
-//         }
-
-//         record := make(map[string]interface{})
-
-//         // Check if this row matches the WHERE conditions
-//         if idx, ok := colIndexes["genres"]; ok {
-//             genres := strings.ToLower(row[idx])
-//             if !strings.Contains(genres, strings.ToLower(strings.Trim(query.Conditions, "%"))) {
-//                 continue // Skip non-matching movies
-//             }
-//         }
-
-//         // Add all requested columns
-//         for _, col := range query.SelectColumns {
-//             if idx, ok := colIndexes[col]; ok && idx < len(row) {
-//                 value := row[idx]
-//                 switch col {
-//                 case "revenue":
-//                     if rev, err := strconv.ParseFloat(value, 64); err == nil {
-//                         record[col] = rev
-//                     }
-//                 case "vote_average":
-//                     if rating, err := strconv.ParseFloat(value, 64); err == nil {
-//                         record[col] = rating
-//                     }
-//                 default:
-//                     record[col] = value
-//                 }
-//             }
-//         }
-
-//         // Only add records with valid values
-//         if _, hasRequired := record[query.OrderBy]; hasRequired {
-//             records = append(records, record)
-//         }
-//     }
-
-//     logger.InfoLogger.Printf("CSV Parser: Found %d matching records before sorting", len(records))
-
-//     // Sort by specified column
-//     sort.Slice(records, func(i, j int) bool {
-//         valI, okI := records[i][query.OrderBy].(float64)
-//         valJ, okJ := records[j][query.OrderBy].(float64)
-
-//         if !okI || !okJ {
-//             return false
-//         }
-
-//         if query.OrderDesc {
-//             return valI > valJ
-//         }
-//         return valI < valJ
-//     })
-
-//     // Apply limit
-//     if query.Limit > 0 && query.Limit < len(records) {
-//         records = records[:query.Limit]
-//     }
-
-//     // Format numerical values for display
-//     for _, record := range records {
-//         if revenue, ok := record["revenue"].(float64); ok {
-//             record["revenue"] = fmt.Sprintf("$%.2f Million", revenue/1000000)
-//         }
-//         if rating, ok := record["vote_average"].(float64); ok {
-//             record["vote_average"] = fmt.Sprintf("%.1f", rating)
-//         }
-//     }
-
-//     logger.InfoLogger.Printf("CSV Parser: Returning %d records after processing", len(records))
-//     return records
-// }
 
 func (p *Parser) processQuery(headers []string, rows [][]string, query QueryInfo) []map[string]interface{} {
 	logger.InfoLogger.Printf("CSV Parser: Processing query with limit %d", query.Limit)

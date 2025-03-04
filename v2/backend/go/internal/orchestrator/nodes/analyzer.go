@@ -21,45 +21,6 @@ func CreateAnalyzer(bridge *llm.Bridge) NodeExecutor {
     return &Analyzer{bridge: bridge}
 }
 
-// func (a *Analyzer) Execute(ctx context.Context, state *types.State) error {
-//     schema, err := a.extractSchema(state.CSVPath)
-//     if err != nil {
-//         return err
-//     }
-//     state.Schema = schema
-
-//     analysis, err := a.bridge.Analyze(ctx, state.Query, schema)
-//     if err != nil {
-//         return err
-//     }
-//     state.Analysis = analysis
-
-//     return nil
-// }
-// func (a *Analyzer) Execute(ctx context.Context, state *types.State) error {
-//     logger.InfoLogger.Printf("Analyzer Node: Starting analysis")
-//     logger.InfoLogger.Printf("Extracting schema from CSV: %s", state.CSVPath)
-
-//     schema, err := a.extractSchema(state.CSVPath)
-//     if err != nil {
-//         logger.ErrorLogger.Printf("Analyzer Node: Schema extraction failed: %v", err)
-//         return err
-//     }
-//     logger.DebugLogger.Printf("Extracted Schema: %+v", schema)
-//     state.Schema = schema
-
-//     logger.InfoLogger.Printf("Analyzer Node: Sending query for analysis")
-//     analysis, err := a.bridge.Analyze(ctx, state.Query, schema)
-//     if err != nil {
-//         logger.ErrorLogger.Printf("Analyzer Node: Analysis failed: %v", err)
-//         return err
-//     }
-//     logger.InfoLogger.Printf("Analyzer Node: Analysis completed")
-//     logger.DebugLogger.Printf("Analysis Result: %+v", analysis)
-//     state.Analysis = analysis
-
-//     return nil
-// }
 func (a *Analyzer) Execute(ctx context.Context, state *types.State) error {
     logger.InfoLogger.Printf("Analyzer Node: Starting analysis for query: %s", state.Query)
 

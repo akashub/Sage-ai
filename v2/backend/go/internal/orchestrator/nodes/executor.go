@@ -19,23 +19,6 @@ func CreateExecutor() NodeExecutor {
     }
 }
 
-// func (e *Executor) Execute(ctx context.Context, state *types.State) error {
-//     if !state.ValidationResult["isValid"].(bool) {
-//         return fmt.Errorf("cannot execute invalid query")
-//     }
-
-//     results, err := e.parser.ExecuteQuery(
-//         state.CSVPath,
-//         state.GeneratedQuery,
-//     )
-//     if err != nil {
-//         return err
-//     }
-
-//     state.ExecutionResult = results
-//     return nil
-// }
-
 func (e *Executor) Execute(ctx context.Context, state *types.State) error {
     logger.InfoLogger.Printf("Executor Node: Starting query execution")
 
