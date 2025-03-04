@@ -1,86 +1,224 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Dialog, DialogContent, IconButton, Box, Typography, Fade } from "@mui/material"
-import { Close as CloseIcon } from "@mui/icons-material"
-import SignUpForm from "./SignUpForm"
+import { useState, useEffect, useRef } from "react"
+import { Dialog, Box, IconButton, useTheme, Typography } from "@mui/material"
+import CloseIcon from "@mui/icons-material/Close"
+import { useAuth } from "./AuthContext"
 import SignInForm from "./SignInForm"
-import { motion, AnimatePresence } from "framer-motion"
+import SignUpForm from "./SignUpForm"
+import ForgotPasswordForm from "./ForgotPasswordForm"
+import OAuthButtons from "./OAuthButtons"
+import { motion } from "framer-motion"
 
-const AuthModal = ({ open, onClose }) => {
-  const [isSignUp, setIsSignUp] = useState(true)
-  const [mounted, setMounted] = useState(false)
+const ROTATING_TEXTS = ["Assistant", "Companion", "Generator"]
+
+const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
+  const theme = useTheme()
+  const { switchAuthMode, authMode } = useAuth()
+  const [currentMode, setCurrentMode] = useState(initialMode)
+  const [displayText, setDisplayText] = useState(ROTATING_TEXTS[0])
+  const [isAnimating, setIsAnimating] = useState(false)
+  const textIndexRef = useRef(0)
+  const animationTimeoutRef = useRef(null)
 
   useEffect(() => {
-    setMounted(true)
+    if (open) {
+      setCurrentMode(initialMode)
+    }
+  }, [open, initialMode])
+
+  useEffect(() => {
+    const rotateText = () => {
+      setIsAnimating(true)
+
+      // After fade out, change the text
+      animationTimeoutRef.current = setTimeout(() => {
+        textIndexRef.current = (textIndexRef.current + 1) % ROTATING_TEXTS.length
+        setDisplayText(ROTATING_TEXTS[textIndexRef.current])
+        setIsAnimating(false)
+      }, 500)
+    }
+
+    const interval = setInterval(rotateText, 2500)
+
+    return () => {
+      clearInterval(interval)
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current)
+      }
+    }
   }, [])
 
-  if (!mounted) return null
+  
+
+  const handleModeSwitch = (mode) => {
+    setCurrentMode(mode)
+  }
 
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="sm"
+      maxWidth="lg"
       fullWidth
       PaperProps={{
-        sx: {
-          bgcolor: "rgba(255, 255, 255, 0.1)",
-          backdropFilter: "blur(20px)",
+        style: {
+          backgroundColor: "#1a1a1a",
           borderRadius: "16px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.2)",
           overflow: "hidden",
-        },
-      }}
-      sx={{
-        "& .MuiBackdrop-root": {
-          backgroundColor: "rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
+          maxWidth: "1000px",
+          position: "relative",
         },
       }}
     >
-      <Fade in={open}>
-        <DialogContent sx={{ p: 0, position: "relative" }}>
-          <IconButton
-            onClick={onClose}
+      <IconButton
+        onClick={onClose}
+        sx={{
+          position: "absolute",
+          right: "16px",
+          top: "16px",
+          color: "rgba(255, 255, 255, 0.5)",
+          zIndex: 1,
+          "&:hover": {
+            backgroundColor: "rgba(255, 255, 255, 0.1)",
+          },
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
+
+      <Box sx={{ display: "flex", minHeight: "600px" }}>
+        {/* Left Section */}
+        <Box
+          sx={{
+            flex: "1",
+            p: 4,
+            position: "relative",
+          }}
+        >
+          <Box sx={{ maxWidth: "400px", mx: "auto", pt: 4 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+              <img src="/logo.png" alt="SAGE.AI Logo" height="60" />
+            </Box>
+
+            <Typography variant="h4" sx={{ mb: 1, fontWeight: 600, textAlign: "center" }}>
+              {currentMode === "signin" ? "Sign in" : "Create account"}
+            </Typography>
+
+            <OAuthButtons />
+
+            <Box sx={{ my: 3, display: "flex", alignItems: "center" }}>
+              <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(255, 255, 255, 0.1)" }} />
+              <Typography sx={{ px: 2, color: "rgba(255, 255, 255, 0.5)" }}>OR</Typography>
+              <Box sx={{ flex: 1, height: "1px", bgcolor: "rgba(255, 255, 255, 0.1)" }} />
+            </Box>
+
+            {currentMode === "signin" && (
+              <SignInForm
+                onSignUpClick={() => handleModeSwitch("signup")}
+                onForgotClick={() => handleModeSwitch("forgot")}
+              />
+            )}
+
+            {currentMode === "signup" && <SignUpForm onSignInClick={() => handleModeSwitch("signin")} />}
+
+            {currentMode === "forgot" && <ForgotPasswordForm onBackToSignIn={() => handleModeSwitch("signin")} />}
+          </Box>
+        </Box>
+
+        {/* Right Section */}
+        <Box
+          sx={{
+            flex: "1",
+            background: "linear-gradient(135deg, rgba(88, 101, 242, 0.3), rgba(235, 69, 158, 0.3))",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            p: 6,
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Box
             sx={{
-              position: "absolute",
-              right: 8,
-              top: 8,
-              color: "text.secondary",
-              zIndex: 1,
+              position: "relative",
+              maxWidth: "400px",
+              width: "100%",
             }}
           >
-            <CloseIcon />
-          </IconButton>
-          <Box sx={{ p: 4 }}>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={isSignUp ? "signup" : "signin"}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h2"
+                component="div"
+                sx={{
+                  fontWeight: 700,
+                  mb: 3,
+                  fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+                  lineHeight: 1.2,
+                  background: "linear-gradient(to right, #fff, #e0e0e0)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
               >
-                <Box sx={{ textAlign: "center", mb: 4 }}>
-                  <Typography variant="h4" component="h2" sx={{ mb: 1, color: "text.primary", fontWeight: "bold" }}>
-                    {isSignUp ? "Create Account" : "Welcome Back"}
-                  </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    {isSignUp ? "Start creating amazing SQL queries with AI" : "Sign in to continue your SQL journey"}
-                  </Typography>
-                </Box>
+                <span>Your AI-Powered SQL</span>
+                <motion.div
+                  animate={{
+                    opacity: isAnimating ? 0 : 1,
+                    y: isAnimating ? -20 : 0,
+                  }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  style={{
+                    background: "linear-gradient(to right, #5865F2, #EB459E)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    marginTop: "0.2em",
+                    height: "1.2em",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {displayText}
+                </motion.div>
+              </Typography>
+            </Box>
 
-                {isSignUp ? (
-                  <SignUpForm onSignInClick={() => setIsSignUp(false)} />
-                ) : (
-                  <SignInForm onSignUpClick={() => setIsSignUp(true)} />
-                )}
-              </motion.div>
-            </AnimatePresence>
+            <Typography
+              variant="h6"
+              sx={{
+                color: "rgba(255, 255, 255, 0.9)",
+                textAlign: "center",
+                lineHeight: 1.6,
+                mt: 4,
+                fontSize: { xs: "1rem", sm: "1.25rem" },
+              }}
+            >
+              Transform natural language into powerful SQL queries instantly with{" "}
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  verticalAlign: "middle",
+                  mx: 1,
+                }}
+              >
+                <img
+                  src="/logo.png"
+                  alt="SAGE.AI Logo"
+                  height="24"
+                  style={{
+                    filter: "brightness(1.2) contrast(1.1)",
+                  }}
+                />
+              </Box>
+            </Typography>
           </Box>
-        </DialogContent>
-      </Fade>
+        </Box>
+      </Box>
     </Dialog>
   )
 }
