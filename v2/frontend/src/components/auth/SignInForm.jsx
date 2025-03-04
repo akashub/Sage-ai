@@ -1,20 +1,36 @@
 "use client"
 
 import { useState } from "react"
-import { Box, TextField, Button, Link, InputAdornment, IconButton } from "@mui/material"
+import { Box, TextField, Button, Link, InputAdornment, IconButton, Alert } from "@mui/material"
 import { Visibility, VisibilityOff } from "@mui/icons-material"
-import { color } from "framer-motion"
+import { useAuth } from "./AuthContext"
 
-const SignInForm = ({ onSignUpClick }) => {
+const SignInForm = ({ onSignUpClick, onForgotClick }) => {
+  const { signIn } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    // Handle sign in logic here
+    setError("")
+    setLoading(true)
+    
+    try {
+      const result = await signIn(formData.email, formData.password)
+      if (!result.success) {
+        setError(result.error || "Failed to sign in")
+      }
+    } catch (err) {
+      setError("An unexpected error occurred")
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleChange = (e) => {
@@ -27,6 +43,12 @@ const SignInForm = ({ onSignUpClick }) => {
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: "100%" }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      
       <TextField
         fullWidth
         label="Email"
@@ -38,10 +60,11 @@ const SignInForm = ({ onSignUpClick }) => {
         required
         sx={{
           "& .MuiOutlinedInput-root": {
-            bgcolor: "background.paper",
+            bgcolor: "rgba(47, 49, 54, 0.6)",
           },
         }}
       />
+      
       <TextField
         fullWidth
         label="Password"
@@ -62,29 +85,49 @@ const SignInForm = ({ onSignUpClick }) => {
         }}
         sx={{
           "& .MuiOutlinedInput-root": {
-            bgcolor: "background.paper",
+            bgcolor: "rgba(47, 49, 54, 0.6)",
           },
         }}
       />
+      
+      <Box sx={{ textAlign: "right", mt: 1 }}>
+        <Link 
+          component="button"
+          type="button" 
+          onClick={onForgotClick} 
+          sx={{ color: "secondary.main" }}
+        >
+          Forgot password?
+        </Link>
+      </Box>
+      
       <Button
         fullWidth
         type="submit"
         variant="contained"
+        color="primary"
+        disabled={loading}
         sx={{
           mt: 3,
           mb: 2,
-          bgcolor: "black",
-          color: "white",
-          "&:hover": {
-            bgcolor: "rgba(0, 0, 0, 0.8)",
-          },
+          height: '50px',
+          borderRadius: '28px',
+          textTransform: 'none',
+          fontSize: '1rem',
+          fontWeight: 500,
         }}
       >
-        Sign In
+        {loading ? "Signing in..." : "Sign In"}
       </Button>
+      
       <Box sx={{ textAlign: "center" }}>
         Don't have an account?{" "}
-        <Link component="button" type="button" onClick={onSignUpClick} sx={{ color: "rgba(255, 255, 255, 1.0)" }}>
+        <Link 
+          component="button" 
+          type="button" 
+          onClick={onSignUpClick} 
+          sx={{ color: "secondary.main" }}
+        >
           Sign up
         </Link>
       </Box>
@@ -93,4 +136,3 @@ const SignInForm = ({ onSignUpClick }) => {
 }
 
 export default SignInForm
-

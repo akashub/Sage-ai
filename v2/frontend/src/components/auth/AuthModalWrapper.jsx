@@ -3,7 +3,7 @@ import AuthModal from "./AuthModal"
 import { Box } from "@mui/material"
 
 const AuthModalWrapper = () => {
-  const { authModalOpen, closeAuthModal } = useAuth()
+  const { authModalOpen, closeAuthModal, authMode } = useAuth()
 
   return (
     <>
@@ -16,7 +16,7 @@ const AuthModalWrapper = () => {
           bottom: 0,
           zIndex: 1299,
           backgroundColor: "rgba(0, 0, 0, 0.5)",
-          backdropFilter: "blur(10px)",
+          backdropFilter: "blur(5px)",
           opacity: authModalOpen ? 1 : 0,
           transition: "opacity 0.3s ease",
           pointerEvents: authModalOpen ? "auto" : "none",
@@ -37,11 +37,10 @@ const AuthModalWrapper = () => {
           justifyContent: "center",
         }}
       >
-        <AuthModal open={authModalOpen} onClose={closeAuthModal} />
+        <AuthModal open={authModalOpen} onClose={closeAuthModal} initialMode={authMode} />
       </Box>
     </>
   )
 }
 
 export default AuthModalWrapper
-
