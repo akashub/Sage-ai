@@ -118,6 +118,15 @@ func setupAuthService(db *sql.DB) *services.AuthService {
 			UserInfoURL:  "https://api.github.com/user",
 			Scopes:       []string{"read:user", "user:email"},
 		},
+		// "github": {
+		// 	ClientID:     "Ov23liFLEJCnd0fpR0P0",
+		// 	ClientSecret: "6707da4695ea33aea2b485c3ba4edb420ebe77f7",
+		// 	RedirectURI:  "http://localhost:3000/oauth-callback",
+		// 	AuthURL:      "https://github.com/login/oauth/authorize",
+		// 	TokenURL:     "https://github.com/login/oauth/access_token",
+		// 	UserInfoURL:  "https://api.github.com/user",
+		// 	Scopes:       []string{"read:user", "user:email"},
+		// },
 	}
 	
 	return services.NewAuthService(db, jwtSecret, jwtExpiry, oauthConfs)

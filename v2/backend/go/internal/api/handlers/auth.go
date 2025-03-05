@@ -44,13 +44,27 @@ import (
 	"sage-ai-v2/pkg/logger"
 )
 
-type AuthHandler struct {
-	authService *services.AuthService
+// Define the interface for AuthService
+type AuthServiceInterface interface {
+    SignIn(ctx context.Context, req models.SignInRequest) (*models.AuthResponse, error)
+    SignUp(ctx context.Context, req models.SignUpRequest) (*models.AuthResponse, error)
+    OAuthSignIn(ctx context.Context, provider, code, redirectURI string) (*models.AuthResponse, error)
+    GetOAuthURL(provider, redirectURI string) (string, error)
+    VerifyToken(token string) (string, error)
+    GetUserByID(ctx context.Context, id string) (*models.User, error)
 }
 
-// Constructor function
-func NewAuthHandler(authService *services.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+type AuthHandler struct {
+	authService AuthServiceInterface
+}
+
+// // Constructor function
+// func NewAuthHandler(authService *services.AuthService) *AuthHandler {
+// 	return &AuthHandler{authService: authService}
+// }
+
+func NewAuthHandler(authService AuthServiceInterface) *AuthHandler {
+    return &AuthHandler{authService: authService}
 }
 
 // SignInHandler handles user sign-in with email/password
@@ -189,102 +203,6 @@ func (h *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		logger.ErrorLogger.Printf("Error encoding response: %v", err)
 	}
 }
-
-// // OAuthSignInHandler handles sign-in/sign-up via OAuth providers
-// func (h *AuthHandler) OAuthSignInHandler(w http.ResponseWriter, r *http.Request) {
-// 	// Set CORS headers
-// 	w.Header().Set("Access-Control-Allow-Origin", "*")
-// 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-// 	// Handle preflight request
-// 	if r.Method == "OPTIONS" {
-// 		w.WriteHeader(http.StatusOK)
-// 		return
-// 	}
-
-// 	// Check request method
-// 	if r.Method != "POST" {
-// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-// 		return
-// 	}
-
-// 	pathParts := strings.Split(r.URL.Path, "/")
-// 	provider := ""
-
-// 	for i, part := range pathParts {
-// 		if part == "oauth" && i+1 < len(pathParts) {
-// 			provider = pathParts[i+1]
-// 			break
-// 		}
-// 	}
-
-// 	// // Get provider from URL path
-// 	// provider := r.URL.Path[len("/api/auth/oauth/"):]
-// 	// if provider == "" {
-// 	// 	http.Error(w, "Provider not specified", http.StatusBadRequest)
-// 	// 	return
-// 	// }
-// 	logger.InfoLogger.Printf("OAuth provider from path: %s", provider)
-    
-//     if provider == "" {
-//         // Try to get from request body as fallback
-//         var req models.OAuthRequest
-//         if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-//             logger.ErrorLogger.Printf("Error parsing OAuth request: %v", err)
-//             http.Error(w, "Invalid request format", http.StatusBadRequest)
-//             return
-//         }
-        
-//         if req.Provider != "" {
-//             provider = req.Provider
-//         } else {
-//             http.Error(w, "Provider not specified", http.StatusBadRequest)
-//             return
-//         }
-//     }
-	
-// 	// Parse request body
-// 	var req models.OAuthRequest
-// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-// 		logger.ErrorLogger.Printf("Error parsing OAuth request: %v", err)
-// 		http.Error(w, "Invalid request format", http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	// Validate request
-// 	if req.Code == "" {
-// 		http.Error(w, "Code is required", http.StatusBadRequest)
-// 		return
-// 	}
-
-// 	// Sign in user with OAuth
-// 	ctx := r.Context()
-// 	resp, err := h.authService.OAuthSignIn(ctx, provider, req.Code, req.RedirectURI)
-// 	if err != nil {
-// 		logger.ErrorLogger.Printf("OAuth error: %v", err)
-// 		http.Error(w, fmt.Sprintf("OAuth authentication failed: %v", err), http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	// Set auth cookie
-// 	http.SetCookie(w, &http.Cookie{
-// 		Name:     "auth_token",
-// 		Value:    resp.AccessToken,
-// 		Path:     "/",
-// 		HttpOnly: true,
-// 		Secure:   r.TLS != nil, // Set to true in production with HTTPS
-// 		SameSite: http.SameSiteLaxMode,
-// 		MaxAge:   int(time.Hour * 24 * 7 / time.Second), // 7 days
-// 	})
-
-// 	// Return response
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.WriteHeader(http.StatusOK)
-// 	if err := json.NewEncoder(w).Encode(resp); err != nil {
-// 		logger.ErrorLogger.Printf("Error encoding response: %v", err)
-// 	}
-// }
 // OAuthSignInHandler handles sign-in/sign-up via OAuth providers
 func (h *AuthHandler) OAuthSignInHandler(w http.ResponseWriter, r *http.Request) {
     // Set Content-Type header first for consistent responses
