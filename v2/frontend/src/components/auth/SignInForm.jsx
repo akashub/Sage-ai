@@ -254,7 +254,7 @@ const SignInForm = ({ onSignUpClick }) => {
         {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
       </Button>
       
-      <Typography variant="body2" align="center" sx={{ mb: 2 }}>
+      {/* <Typography variant="body2" align="center" sx={{ mb: 2 }}>
         Or sign in with
       </Typography>
       
@@ -278,7 +278,7 @@ const SignInForm = ({ onSignUpClick }) => {
         >
           GitHub
         </Button>
-      </Box>
+      </Box> */}
       
       <Box sx={{ textAlign: "center" }}>
         Don't have an account?{" "}

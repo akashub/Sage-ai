@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Dialog, Box, IconButton, useTheme, Typography } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import { useAuth } from "./AuthContext"
@@ -8,7 +8,7 @@ import SignInForm from "./SignInForm"
 import SignUpForm from "./SignUpForm"
 import ForgotPasswordForm from "./ForgotPasswordForm"
 import OAuthButtons from "./OAuthButtons"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion } from "framer-motion"
 
 const ROTATING_TEXTS = ["Assistant", "Companion", "Generator"]
 
@@ -16,7 +16,10 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
   const theme = useTheme()
   const { switchAuthMode, authMode } = useAuth()
   const [currentMode, setCurrentMode] = useState(initialMode)
-  const [textIndex, setTextIndex] = useState(0)
+  const [displayText, setDisplayText] = useState(ROTATING_TEXTS[0])
+  const [isAnimating, setIsAnimating] = useState(false)
+  const textIndexRef = useRef(0)
+  const animationTimeoutRef = useRef(null)
 
   useEffect(() => {
     if (open) {
@@ -25,15 +28,31 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
   }, [open, initialMode])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setTextIndex((current) => (current + 1) % ROTATING_TEXTS.length)
-    }, 2000)
-    return () => clearInterval(interval)
+    const rotateText = () => {
+      setIsAnimating(true)
+
+      // After fade out, change the text
+      animationTimeoutRef.current = setTimeout(() => {
+        textIndexRef.current = (textIndexRef.current + 1) % ROTATING_TEXTS.length
+        setDisplayText(ROTATING_TEXTS[textIndexRef.current])
+        setIsAnimating(false)
+      }, 500)
+    }
+
+    const interval = setInterval(rotateText, 2500)
+
+    return () => {
+      clearInterval(interval)
+      if (animationTimeoutRef.current) {
+        clearTimeout(animationTimeoutRef.current)
+      }
+    }
   }, [])
+
+  
 
   const handleModeSwitch = (mode) => {
     setCurrentMode(mode)
-    switchAuthMode(mode)
   }
 
   return (
@@ -48,11 +67,10 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
           borderRadius: "16px",
           overflow: "hidden",
           maxWidth: "1000px",
-          position: "relative", // Added for absolute positioning context
+          position: "relative",
         },
       }}
     >
-      {/* Close button positioned relative to Dialog */}
       <IconButton
         onClick={onClose}
         sx={{
@@ -117,57 +135,85 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
             alignItems: "center",
             justifyContent: "center",
             p: 6,
+            position: "relative",
+            overflow: "hidden",
           }}
         >
-          <Box sx={{ position: "relative", maxWidth: "400px" }}>
-            <Typography
-              variant="h3"
-              sx={{
-                fontWeight: 700,
-                mb: 3,
-                color: "white",
-                textAlign: "center",
-              }}
-            >
-              Your AI-Powered SQL{" "}
-              <Box
+          <Box
+            sx={{
+              position: "relative",
+              maxWidth: "400px",
+              width: "100%",
+            }}
+          >
+            <Box sx={{ textAlign: "center" }}>
+              <Typography
+                variant="h2"
+                component="div"
                 sx={{
-                  display: "inline-block",
-                  position: "relative",
-                  minWidth: "200px",
-                  height: "60px",
+                  fontWeight: 700,
+                  mb: 3,
+                  fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+                  lineHeight: 1.2,
+                  background: "linear-gradient(to right, #fff, #e0e0e0)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
                 }}
               >
-                <AnimatePresence mode="wait">
-                  <motion.span
-                    key={textIndex}
-                    initial={{ y: 20, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -20, opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      right: 0,
-                      textAlign: "center",
-                    }}
-                  >
-                    {ROTATING_TEXTS[textIndex]}
-                  </motion.span>
-                </AnimatePresence>
-              </Box>
-            </Typography>
+                <span>Your AI-Powered SQL</span>
+                <motion.div
+                  animate={{
+                    opacity: isAnimating ? 0 : 1,
+                    y: isAnimating ? -20 : 0,
+                  }}
+                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  style={{
+                    background: "linear-gradient(to right, #5865F2, #EB459E)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    marginTop: "0.2em",
+                    height: "1.2em",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  {displayText}
+                </motion.div>
+              </Typography>
+            </Box>
+
             <Typography
               variant="h6"
               sx={{
-                color: "rgba(255, 255, 255, 0.8)",
+                color: "rgba(255, 255, 255, 0.9)",
                 textAlign: "center",
                 lineHeight: 1.6,
+                mt: 4,
+                fontSize: { xs: "1rem", sm: "1.25rem" },
               }}
             >
               Transform natural language into powerful SQL queries instantly with{" "}
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", verticalAlign: "middle" }}>
-                <img src="/logo.png" alt="SAGE.AI Logo" height="24" style={{ marginLeft: "4px", marginRight: "4px" }} />
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  verticalAlign: "middle",
+                  mx: 1,
+                }}
+              >
+                <img
+                  src="/logo.png"
+                  alt="SAGE.AI Logo"
+                  height="24"
+                  style={{
+                    filter: "brightness(1.2) contrast(1.1)",
+                  }}
+                />
               </Box>
             </Typography>
           </Box>
@@ -178,4 +224,3 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
 }
 
 export default AuthModal
-
