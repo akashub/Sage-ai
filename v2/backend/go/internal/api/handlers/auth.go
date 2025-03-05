@@ -36,6 +36,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"sage-ai-v2/internal/models"
@@ -189,72 +190,218 @@ func (h *AuthHandler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// // OAuthSignInHandler handles sign-in/sign-up via OAuth providers
+// func (h *AuthHandler) OAuthSignInHandler(w http.ResponseWriter, r *http.Request) {
+// 	// Set CORS headers
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+// 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+// 	// Handle preflight request
+// 	if r.Method == "OPTIONS" {
+// 		w.WriteHeader(http.StatusOK)
+// 		return
+// 	}
+
+// 	// Check request method
+// 	if r.Method != "POST" {
+// 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+// 		return
+// 	}
+
+// 	pathParts := strings.Split(r.URL.Path, "/")
+// 	provider := ""
+
+// 	for i, part := range pathParts {
+// 		if part == "oauth" && i+1 < len(pathParts) {
+// 			provider = pathParts[i+1]
+// 			break
+// 		}
+// 	}
+
+// 	// // Get provider from URL path
+// 	// provider := r.URL.Path[len("/api/auth/oauth/"):]
+// 	// if provider == "" {
+// 	// 	http.Error(w, "Provider not specified", http.StatusBadRequest)
+// 	// 	return
+// 	// }
+// 	logger.InfoLogger.Printf("OAuth provider from path: %s", provider)
+    
+//     if provider == "" {
+//         // Try to get from request body as fallback
+//         var req models.OAuthRequest
+//         if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+//             logger.ErrorLogger.Printf("Error parsing OAuth request: %v", err)
+//             http.Error(w, "Invalid request format", http.StatusBadRequest)
+//             return
+//         }
+        
+//         if req.Provider != "" {
+//             provider = req.Provider
+//         } else {
+//             http.Error(w, "Provider not specified", http.StatusBadRequest)
+//             return
+//         }
+//     }
+	
+// 	// Parse request body
+// 	var req models.OAuthRequest
+// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+// 		logger.ErrorLogger.Printf("Error parsing OAuth request: %v", err)
+// 		http.Error(w, "Invalid request format", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	// Validate request
+// 	if req.Code == "" {
+// 		http.Error(w, "Code is required", http.StatusBadRequest)
+// 		return
+// 	}
+
+// 	// Sign in user with OAuth
+// 	ctx := r.Context()
+// 	resp, err := h.authService.OAuthSignIn(ctx, provider, req.Code, req.RedirectURI)
+// 	if err != nil {
+// 		logger.ErrorLogger.Printf("OAuth error: %v", err)
+// 		http.Error(w, fmt.Sprintf("OAuth authentication failed: %v", err), http.StatusInternalServerError)
+// 		return
+// 	}
+
+// 	// Set auth cookie
+// 	http.SetCookie(w, &http.Cookie{
+// 		Name:     "auth_token",
+// 		Value:    resp.AccessToken,
+// 		Path:     "/",
+// 		HttpOnly: true,
+// 		Secure:   r.TLS != nil, // Set to true in production with HTTPS
+// 		SameSite: http.SameSiteLaxMode,
+// 		MaxAge:   int(time.Hour * 24 * 7 / time.Second), // 7 days
+// 	})
+
+// 	// Return response
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.WriteHeader(http.StatusOK)
+// 	if err := json.NewEncoder(w).Encode(resp); err != nil {
+// 		logger.ErrorLogger.Printf("Error encoding response: %v", err)
+// 	}
+// }
 // OAuthSignInHandler handles sign-in/sign-up via OAuth providers
 func (h *AuthHandler) OAuthSignInHandler(w http.ResponseWriter, r *http.Request) {
-	// Set CORS headers
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    // Set Content-Type header first for consistent responses
+    w.Header().Set("Content-Type", "application/json")
+    
+    // Set CORS headers
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-	// Handle preflight request
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(http.StatusOK)
-		return
-	}
+    // Handle preflight request
+    if r.Method == "OPTIONS" {
+        w.WriteHeader(http.StatusOK)
+        return
+    }
 
-	// Check request method
-	if r.Method != "POST" {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+    // Check request method
+    if r.Method != "POST" {
+        w.WriteHeader(http.StatusMethodNotAllowed)
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "error": true,
+            "message": "Method not allowed",
+        })
+        return
+    }
 
-	// Get provider from URL path
-	provider := r.URL.Path[len("/api/auth/oauth/"):]
-	if provider == "" {
-		http.Error(w, "Provider not specified", http.StatusBadRequest)
-		return
-	}
+    // Get provider from URL path
+    pathParts := strings.Split(r.URL.Path, "/")
+    provider := ""
+    for i, part := range pathParts {
+        if part == "oauth" && i+1 < len(pathParts) {
+            provider = pathParts[i+1]
+            break
+        }
+    }
 
-	// Parse request body
-	var req models.OAuthRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger.ErrorLogger.Printf("Error parsing OAuth request: %v", err)
-		http.Error(w, "Invalid request format", http.StatusBadRequest)
-		return
-	}
+    logger.InfoLogger.Printf("OAuth provider from path: %s", provider)
+    
+    if provider == "" || provider == "unknown" {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "error": true,
+            "message": "Provider not specified",
+        })
+        return
+    }
+    
+    // Parse request body
+    var req models.OAuthRequest
+    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+        logger.ErrorLogger.Printf("Error parsing OAuth request: %v", err)
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "error": true,
+            "message": "Invalid request format",
+        })
+        return
+    }
 
-	// Validate request
-	if req.Code == "" {
-		http.Error(w, "Code is required", http.StatusBadRequest)
-		return
-	}
+    // Validate request
+    if req.Code == "" {
+        w.WriteHeader(http.StatusBadRequest)
+        json.NewEncoder(w).Encode(map[string]interface{}{
+            "error": true,
+            "message": "Code is required",
+        })
+        return
+    }
 
-	// Sign in user with OAuth
-	ctx := r.Context()
+    // Sign in user with OAuth
+    ctx := r.Context()
+    // resp, err := h.authService.OAuthSignIn(ctx, provider, req.Code, req.RedirectURI)
+    // if err != nil {
+    //     logger.ErrorLogger.Printf("OAuth error: %v", err)
+    //     w.WriteHeader(http.StatusInternalServerError)
+    //     json.NewEncoder(w).Encode(map[string]interface{}{
+    //         "error": true,
+    //         "message": fmt.Sprintf("OAuth authentication failed: %v", err),
+    //     })
+    //     return
+    // }
 	resp, err := h.authService.OAuthSignIn(ctx, provider, req.Code, req.RedirectURI)
 	if err != nil {
 		logger.ErrorLogger.Printf("OAuth error: %v", err)
-		http.Error(w, fmt.Sprintf("OAuth authentication failed: %v", err), http.StatusInternalServerError)
+		
+		// Check for rate limiting error
+		if strings.Contains(err.Error(), "429") || strings.Contains(err.Error(), "rate limit") {
+			w.WriteHeader(http.StatusTooManyRequests)
+			json.NewEncoder(w).Encode(map[string]interface{}{
+				"error": true,
+				"message": "You've reached GitHub's rate limit. Please try again later.",
+			})
+			return
+		}
+		
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]interface{}{
+			"error": true,
+			"message": fmt.Sprintf("OAuth authentication failed: %v", err),
+		})
 		return
 	}
 
-	// Set auth cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "auth_token",
-		Value:    resp.AccessToken,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   r.TLS != nil, // Set to true in production with HTTPS
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   int(time.Hour * 24 * 7 / time.Second), // 7 days
-	})
+    // Set auth cookie
+    http.SetCookie(w, &http.Cookie{
+        Name:     "auth_token",
+        Value:    resp.AccessToken,
+        Path:     "/",
+        HttpOnly: true,
+        Secure:   r.TLS != nil,
+        SameSite: http.SameSiteLaxMode,
+        MaxAge:   int(time.Hour * 24 * 7 / time.Second),
+    })
 
-	// Return response
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(resp); err != nil {
-		logger.ErrorLogger.Printf("Error encoding response: %v", err)
-	}
+    // Return response
+    w.WriteHeader(http.StatusOK)
+    json.NewEncoder(w).Encode(resp)
 }
 
 // OAuthURLHandler returns the URL for OAuth authentication

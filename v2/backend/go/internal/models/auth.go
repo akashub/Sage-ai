@@ -36,6 +36,7 @@ type SignUpRequest struct {
 type OAuthRequest struct {
 	Code        string `json:"code"`
 	RedirectURI string `json:"redirect_uri"`
+	Provider    string `json:"provider"`
 }
 
 // AuthResponse represents the response after successful authentication

@@ -93,16 +93,41 @@ const OAuthButton = ({ icon, children, onClick, delay }) => (
 const OAuthButtons = () => {
   const { getOAuthUrl } = useAuth();
 
+  // const handleOAuthSignIn = async (provider) => {
+  //   try {
+  //     const redirectUri = `${window.location.origin}/oauth-callback`;
+  //     const authUrl = await getOAuthUrl(provider, redirectUri);
+  //     window.location.href = authUrl;
+  //   } catch (err) {
+  //     console.error(`OAuth sign in with ${provider} failed:`, err);
+  //   }
+  // };
   const handleOAuthSignIn = async (provider) => {
     try {
       const redirectUri = `${window.location.origin}/oauth-callback`;
-      const authUrl = await getOAuthUrl(provider, redirectUri);
-      window.location.href = authUrl;
+      console.log(`Requesting OAuth URL for ${provider} with redirect URI: ${redirectUri}`);
+      
+      // Pass the provider in the query parameter so we can retrieve it later
+      const response = await fetch(`/api/auth/oauth/url/${provider}?redirect_uri=${encodeURIComponent(redirectUri)}&provider=${provider}`);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Error response from server:`, errorText);
+        throw new Error(`Failed to get OAuth URL: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`Redirecting to: ${data.url}`);
+      
+      // Store the provider in sessionStorage before redirecting
+      sessionStorage.setItem('oauth_provider', provider);
+      
+      window.location.href = data.url;
     } catch (err) {
       console.error(`OAuth sign in with ${provider} failed:`, err);
     }
   };
-
+  
   return (
     <Box>
       <OAuthButton 

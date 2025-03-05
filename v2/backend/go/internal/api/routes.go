@@ -111,7 +111,7 @@ func setupAuthService(db *sql.DB) *services.AuthService {
 		},
 		"github": {
 			ClientID:     "Ov23liJMbcmt6eXGI7yN",
-			ClientSecret: "ae1a717b3b1311ba7e3af4f356d37019fac61639",
+			ClientSecret: "04617e96169696a53048a2bdc886c5d9ae38268d",
 			RedirectURI:  "http://localhost:3000/oauth-callback",
 			AuthURL:      "https://github.com/login/oauth/authorize",
 			TokenURL:     "https://github.com/login/oauth/access_token",
