@@ -101,8 +101,8 @@ func setupAuthService(db *sql.DB) *services.AuthService {
 	// OAuth configurations
 	oauthConfs := map[string]models.OAuthConfig{
 		"google": {
-			ClientID:     "your-google-client-id",
-			ClientSecret: "your-google-client-secret",
+			ClientID:     "64583008448-4aa9mivl1jurlp1bheabkc5m0irc6fsp.apps.googleusercontent.com",
+			ClientSecret: "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",
 			RedirectURI:  "http://localhost:3000/oauth-callback",
 			AuthURL:      "https://accounts.google.com/o/oauth2/auth",
 			TokenURL:     "https://oauth2.googleapis.com/token",
@@ -110,8 +110,8 @@ func setupAuthService(db *sql.DB) *services.AuthService {
 			Scopes:       []string{"email", "profile"},
 		},
 		"github": {
-			ClientID:     "your-github-client-id",
-			ClientSecret: "your-github-client-secret",
+			ClientID:     "Ov23liJMbcmt6eXGI7yN",
+			ClientSecret: "ae1a717b3b1311ba7e3af4f356d37019fac61639",
 			RedirectURI:  "http://localhost:3000/oauth-callback",
 			AuthURL:      "https://github.com/login/oauth/authorize",
 			TokenURL:     "https://github.com/login/oauth/access_token",

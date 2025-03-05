@@ -55,9 +55,10 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 // SignInHandler handles user sign-in with email/password
 func (h *AuthHandler) SignInHandler(w http.ResponseWriter, r *http.Request) {
 	// Set CORS headers
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	// Handle preflight request
 	if r.Method == "OPTIONS" {

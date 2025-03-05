@@ -1,13 +1,14 @@
 // pages/OAuthCallback.jsx
 import { useEffect, useState } from "react";
-import { useLocation, Navigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Box, CircularProgress, Typography, Paper } from "@mui/material";
-import { useAuth } from "../components/auth/AuthContext";
+import { useAuth } from "./AuthContext";
 
 const OAuthCallback = () => {
   const [status, setStatus] = useState("Processing your authentication...");
   const [error, setError] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const { oauthSignIn } = useAuth();
 
   useEffect(() => {
@@ -41,6 +42,7 @@ const OAuthCallback = () => {
         await oauthSignIn(provider, code, window.location.origin + "/oauth-callback");
         
         // Redirect will happen automatically via AuthContext
+        navigate("/chat");
       } catch (err) {
         console.error("OAuth callback error:", err);
         setError(err.message);

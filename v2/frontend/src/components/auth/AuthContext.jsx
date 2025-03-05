@@ -237,51 +237,92 @@ export const AuthProvider = ({ children }) => {
 //       throw err;
 //     }
 //   };
-const signIn = async (email, password) => {
-    setError(null);
-    try {
-      // First check if the API is available
-      try {
-        const checkResponse = await fetch("/api/health", { method: "GET" });
-        if (!checkResponse.ok) {
-          throw new Error("API server not available");
-        }
-      } catch (err) {
-        console.error("API server check failed:", err);
-        throw new Error("Backend API service is not running. Please start the server.");
-      }
+// const signIn = async (email, password) => {
+//     setError(null);
+//     try {
+//       // First check if the API is available
+//       try {
+//         const checkResponse = await fetch("/api/health", { method: "GET" });
+//         if (!checkResponse.ok) {
+//           throw new Error("API server not available");
+//         }
+//       } catch (err) {
+//         console.error("API server check failed:", err);
+//         throw new Error("Backend API service is not running. Please start the server.");
+//       }
       
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
+//       const response = await fetch("/api/auth/signin", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         credentials: "include",
+//         body: JSON.stringify({ email, password }),
+//       });
   
-      // Handle non-JSON responses
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        console.error("Received non-JSON response:", await response.text());
-        throw new Error("Invalid response from server");
-      }
+//       // Handle non-JSON responses
+//       const contentType = response.headers.get("content-type");
+//       if (!contentType || !contentType.includes("application/json")) {
+//         console.error("Received non-JSON response:", await response.text());
+//         throw new Error("Invalid response from server");
+//       }
   
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Sign in failed");
-      }
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message || "Sign in failed");
+//       }
   
-      const data = await response.json();
-      setUser(data.user);
-      closeAuthModal();
-      navigate("/chat");
-      return data;
-    } catch (err) {
-      setError(err.message);
-      throw err;
+//       const data = await response.json();
+//       setUser(data.user);
+//       closeAuthModal();
+//       navigate("/chat");
+//       return data;
+//     } catch (err) {
+//       setError(err.message);
+//       throw err;
+//     }
+//   };
+const signIn = async (email, password) => {
+  setError(null);
+  try {
+    console.log("Making sign-in request to:", "/api/auth/signin");
+    
+    const response = await fetch("/api/auth/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
+    
+    console.log("Received response:", response.status, response.statusText);
+    
+    // Check if response is JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      // Log the HTML response for debugging
+      const textResponse = await response.text();
+      console.error("Received non-JSON response:", textResponse);
+      throw new Error("Server returned an invalid response format");
     }
-  };
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Sign in failed");
+    }
+
+    const data = await response.json();
+    setUser(data.user);
+    closeAuthModal();
+    navigate("/chat");
+    return data;
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(err.message);
+    throw err;
+  }
+};
 
   // Sign up function
   const signUp = async (email, password, name) => {
