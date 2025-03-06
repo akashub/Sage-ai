@@ -4,7 +4,7 @@
 Sage.AI is an intelligent system that transforms natural language into SQL queries using LLMs and few-shot learning. It executes queries and presents results through an interactive chatbot interface, maintaining context for follow-ups while adapting to different database schemas. We eventually aim to make it data-agnostic so that Sage.ai is a one stop solution for all kinds of use-cases.
 
 <div style="background-color: #404EED; padding: 20px; text-align: center; margin: 20px 0;">
-  <img src="./readme_assets/logo.png" alt="Sage.AI Logo" style="max-width: 50%; height: auto;">
+  <img src="./readme_assets/logo.png" alt="Sage.AI Logo" style="max-width: 80%; height: auto;">
 </div>
 
 Find our demo videos for each Sprint here! [Sprint Demo videos](https://uflorida-my.sharepoint.com/personal/yashkishore_ufl_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fyashkishore%5Fufl%5Fedu%2FDocuments%2FSoftware%20Engineering&ga=1)
@@ -21,29 +21,29 @@ Data analysts and business users often struggle with writing complex SQL queries
 ## Architecture Overview
 
 ```
-                                    ┌─────────────────┐         ┌─────────────────────────────────────────┐         ┌─────────────────┐
-                                    │                 │         │                                         │         │                 │
-                                    │  React Frontend │◄────────┤           Go Backend Server             │◄────────┤  Python LLM     │
-                                    │  (Components)   │         │                                         │         │  Microservice   │
-                                    │                 │         │                                         │         │                 │
-                                    └─────────────────┘         └─────────────────────────────────────────┘         └─────────────────┘
-                                        │                                       │                                         │
-                                        │                                       │                                         │
-                                        ▼                                       ▼                                         ▼
-                                    ┌─────────────────┐         ┌─────────────────────────────────────────┐         ┌─────────────────┐
-                                    │  UI Components  │         │  Request Handlers & API Controllers      │         │ LLM Integration │
-                                    │  Auth Flow      │─────────┤  Authentication Services                 │         │ Text Analysis   │
-                                    │  Chat Interface │         │  Orchestrator & Node Management          │─────────┤ SQL Generation  │
-                                    │  File Upload    │         │  Database Connections                    │         │ Query Validation│
-                                    │  Visualization  │         │  Session & State Management              │         │ Healing Logic   │
-                                    └─────────────────┘         └─────────────────────────────────────────┘         └─────────────────┘
-                                                                                    │
-                                                                                    │
-                                                                                    ▼
-                                                                        ┌───────────────────────┐
-                                                                        │    Database Layer     │
-                                                                        │  (PostgreSQL/SQLite)  │
-                                                                        └───────────────────────┘
+┌─────────────────┐         ┌─────────────────────────────────────────┐         ┌─────────────────┐
+│                 │         │                                         │         │                 │
+│  React Frontend │◄────────┤           Go Backend Server             │◄────────┤  Python LLM     │
+│  (Components)   │         │                                         │         │  Microservice   │
+│                 │         │                                         │         │                 │
+└─────────────────┘         └─────────────────────────────────────────┘         └─────────────────┘
+    │                                       │                                         │
+    │                                       │                                         │
+    ▼                                       ▼                                         ▼
+┌─────────────────┐         ┌─────────────────────────────────────────┐         ┌─────────────────┐
+│  UI Components  │         │  Request Handlers & API Controllers      │         │ LLM Integration │
+│  Auth Flow      │─────────┤  Authentication Services                 │         │ Text Analysis   │
+│  Chat Interface │         │  Orchestrator & Node Management          │─────────┤ SQL Generation  │
+│  File Upload    │         │  Database Connections                    │         │ Query Validation│
+│  Visualization  │         │  Session & State Management              │         │ Healing Logic   │
+└─────────────────┘         └─────────────────────────────────────────┘         └─────────────────┘
+                                                │
+                                                │
+                                                ▼
+                                    ┌───────────────────────┐
+                                    │    Database Layer     │
+                                    │  (PostgreSQL/SQLite)  │
+                                    └───────────────────────┘
 ```
 
 
