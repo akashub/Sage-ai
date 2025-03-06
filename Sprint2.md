@@ -4,6 +4,8 @@
 
 Sprint 2 focused on integrating the frontend and backend components of Sage-AI, creating a seamless user experience for natural language to SQL conversion. The major achievement was establishing a fully functional authentication system with multiple sign-in methods (email/password, GitHub, Google) and connecting the React frontend to our Go+Python backend orchestration pipeline. This integration allows users to perform natural language queries against their data through an intuitive chat interface, with real-time SQL generation and result rendering.
 
+Please find our Sprint 2 frontend and backend demo videos here [Sprint2 Demo Videos](https://uflorida-my.sharepoint.com/personal/yashkishore_ufl_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fyashkishore%5Fufl%5Fedu%2FDocuments%2FSoftware%20Engineering%2FSprint2&ga=1)
+
 ### Auth Screen
 ![Auth Demo](./readme_assets/AuthScreen.gif)
 
