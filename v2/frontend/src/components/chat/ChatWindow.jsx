@@ -1,149 +1,3 @@
-// "use client";
-
-// import { useState } from "react";
-// import {
-//   Box,
-//   TextField,
-//   Button,
-//   Typography,
-//   Paper,
-//   IconButton,
-//   InputAdornment,
-// } from "@mui/material";
-// import { Send as SendIcon, AttachFile as AttachFileIcon } from "@mui/icons-material";
-// import { keyframes } from "@mui/system";
-
-// const gradientAnimation = keyframes`
-//   0% { background-position: 0% 50%; }
-//   50% { background-position: 100% 50%; }
-//   100% { background-position: 0% 50%; }
-// `;
-
-// const samplePrompts = [
-//   "How do I write a query to get users older than 30?",
-//   "Show me the latest 10 orders placed.",
-//   "What's the total revenue for last month?",
-// ];
-
-// const ChatWindow = () => {
-//   const [input, setInput] = useState("");
-//   const [messages, setMessages] = useState([]);
-
-//   const handleSend = () => {
-//     if (input.trim()) {
-//       setMessages([...messages, { text: input, sender: "user" }]);
-//       setInput("");
-//       setTimeout(() => {
-//         setMessages((prev) => [
-//           ...prev,
-//           {
-//             text: "This is a sample AI response. Your SQL query might look like: SELECT * FROM table WHERE condition;",
-//             sender: "ai",
-//           },
-//         ]);
-//       }, 1000);
-//     }
-//   };
-
-//   return (
-//     <Box sx={{ flexGrow: 1, display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
-//       <Paper sx={{ flexGrow: 1, display: "flex", flexDirection: "column", p: 2, overflowY: "auto" }}>
-//         {messages.length === 0 ? (
-//           <Box
-//             sx={{
-//               display: "flex",
-//               flexDirection: "column",
-//               alignItems: "center",
-//               justifyContent: "center",
-//               height: "100%",
-//             }}
-//           >
-//             <Typography
-//               variant="h5"
-//               sx={{
-//                 background: "linear-gradient(90deg, #00D4FF, #FF4D4D)",
-//                 backgroundSize: "200% 200%",
-//                 animation: `${gradientAnimation} 5s ease infinite`,
-//                 WebkitBackgroundClip: "text",
-//                 WebkitTextFillColor: "transparent",
-//                 fontWeight: 700,
-//                 mb: 2,
-//               }}
-//             >
-//               Welcome to Sage AI Chat!
-//             </Typography>
-//             <Typography variant="body1" sx={{ mb: 1 }}>
-//               Try one of these prompts:
-//             </Typography>
-//             {samplePrompts.map((prompt, index) => (
-//               <Typography
-//                 key={index}
-//                 variant="body2"
-//                 sx={{
-//                   mb: 0.5,
-//                   background: "linear-gradient(90deg, #FF4D4D, #00D4FF)",
-//                   backgroundSize: "200% 200%",
-//                   animation: `${gradientAnimation} 5s ease infinite`,
-//                   WebkitBackgroundClip: "text",
-//                   WebkitTextFillColor: "transparent",
-//                 }}
-//               >
-//                 {prompt}
-//               </Typography>
-//             ))}
-//           </Box>
-//         ) : (
-//           messages.map((msg, index) => (
-//             <Box key={index} sx={{ display: "flex", justifyContent: msg.sender === "user" ? "flex-end" : "flex-start", mb: 1 }}>
-//               <Box
-//                 sx={{
-//                   p: 1.5,
-//                   borderRadius: 2,
-//                   maxWidth: "70%",
-//                   backgroundColor: msg.sender === "user" ? "primary.main" : "background.default",
-//                   color: msg.sender === "user" ? "white" : "text.primary",
-//                 }}
-//               >
-//                 <Typography variant="body1">{msg.text}</Typography>
-//               </Box>
-//             </Box>
-//           ))
-//         )}
-//       </Paper>
-//       <Box sx={{ p: 2, borderTop: "1px solid rgba(255,255,255,0.1)", display: "flex", gap: 1 }}>
-//         <TextField
-//           fullWidth
-//           variant="outlined"
-//           placeholder="Type your message..."
-//           value={input}
-//           onChange={(e) => setInput(e.target.value)}
-//           onKeyPress={(e) => {
-//             if (e.key === "Enter") {
-//               e.preventDefault();
-//               handleSend();
-//             }
-//           }}
-//           InputProps={{
-//             endAdornment: (
-//               <InputAdornment position="end">
-//                 <IconButton component="label">
-//                   <AttachFileIcon />
-//                   <input type="file" hidden />
-//                 </IconButton>
-//               </InputAdornment>
-//             ),
-//           }}
-//         />
-//         <Button variant="contained" endIcon={<SendIcon />} onClick={handleSend}>
-//           Send
-//         </Button>
-//       </Box>
-//     </Box>
-//   );
-// };
-
-// export default ChatWindow;
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -159,17 +13,20 @@ import {
   InputAdornment,
   CircularProgress,
   Divider,
-}
-
-from "@mui/material";
+  Avatar,
+  Menu,
+  MenuItem,
+  Tooltip
+} from "@mui/material";
 import { 
   Send as SendIcon, 
   AttachFile as AttachFileIcon, 
   TableChart as TableChartIcon,
-  FileOpen as FileOpenIcon
-} 
-
-from "@mui/icons-material";
+  FileOpen as FileOpenIcon,
+  AccountCircle as AccountCircleIcon,
+  Logout as LogoutIcon,
+  Settings as SettingsIcon
+} from "@mui/icons-material";
 import { keyframes } from "@mui/system";
 
 const gradientAnimation = keyframes`
@@ -191,6 +48,7 @@ const ChatWindow = () => {
   const [csvFile, setCsvFile] = useState(null);
   const [csvHeaders, setCsvHeaders] = useState([]);
   const [sessionActive, setSessionActive] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
   const fileInputRef = useRef(null);
   const messageEndRef = useRef(null);
 
@@ -198,6 +56,24 @@ const ChatWindow = () => {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const handleProfileMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    // Add logout logic here
+    handleProfileMenuClose();
+  };
+
+  const handleSettings = () => {
+    // Add settings logic here
+    handleProfileMenuClose();
+  };
 
   const handleFileUpload = async (event) => {
     const file = event.target.files[0];
@@ -306,38 +182,90 @@ const ChatWindow = () => {
       {/* Header */}
       <Paper 
         sx={{ 
-          p: 2, 
+          py: 1.5,
+          px: 2, 
           display: "flex", 
           justifyContent: "space-between", 
           alignItems: "center",
-          borderRadius: 0
+          borderRadius: 0,
+          borderBottom: "1px solid rgba(255,255,255,0.1)",
+          backgroundColor: 'transparent'
         }} 
-        elevation={2}
+        elevation={0}
       >
-        <Typography variant="h6">
-          {sessionActive 
-            ? `Sage AI - Session with ${csvFile?.name || "CSV File"}`
-            : "Sage AI - Upload a CSV file to begin"}
-        </Typography>
-        {sessionActive ? (
-          <Button 
-            variant="outlined" 
-            size="small"
-            onClick={startNewSession}
-            startIcon={<FileOpenIcon />}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 500,
+              fontSize: '1rem',
+              color: 'rgba(255,255,255,0.9)'
+            }}
           >
-            New Session
-          </Button>
-        ) : (
-          <Button
-            variant="contained"
-            onClick={() => fileInputRef.current.click()}
-            startIcon={<AttachFileIcon />}
-            disabled={loading}
+            {sessionActive ? csvFile?.name.replace('.csv', '') : 'New Chat'}
+          </Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          {sessionActive && (
+            <Button 
+              variant="text" 
+              size="small"
+              onClick={startNewSession}
+              startIcon={<FileOpenIcon />}
+              sx={{ 
+                color: 'rgba(255,255,255,0.8)',
+                '&:hover': {
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                }
+              }}
+            >
+              New Chat
+            </Button>
+          )}
+          <Tooltip title="Account settings">
+            <IconButton
+              onClick={handleProfileMenuOpen}
+              size="small"
+              sx={{ ml: 1 }}
+            >
+              <Avatar 
+                sx={{ 
+                  width: 28, 
+                  height: 28, 
+                  bgcolor: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.2)'
+                }}
+              >
+                <AccountCircleIcon fontSize="small" />
+              </Avatar>
+            </IconButton>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleProfileMenuClose}
+            PaperProps={{
+              sx: {
+                backgroundColor: "background.paper",
+                minWidth: 200,
+                mt: 1,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+              }
+            }}
           >
-            Upload CSV
-          </Button>
-        )}
+            <MenuItem onClick={handleProfileMenuClose}>
+              <AccountCircleIcon sx={{ mr: 1, fontSize: '1.25rem' }} /> Profile
+            </MenuItem>
+            <MenuItem onClick={handleSettings}>
+              <SettingsIcon sx={{ mr: 1, fontSize: '1.25rem' }} /> Settings
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout}>
+              <LogoutIcon sx={{ mr: 1, fontSize: '1.25rem' }} /> Logout
+            </MenuItem>
+          </Menu>
+        </Box>
         <input
           type="file"
           accept=".csv"

@@ -59,7 +59,8 @@ import {
   Divider,
   Button,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Tooltip
 } from "@mui/material";
 import { 
   Add as AddIcon, 
@@ -68,14 +69,16 @@ import {
   TableChart as TableChartIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
-  Home as HomeIcon
+  Home as HomeIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 
 const drawerWidth = 300;
+const collapsedDrawerWidth = 65;
 
 const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
-  // Mock chat history - in a real app, you'd fetch this from your backend
   const [chatHistory, setChatHistory] = useState([
     { id: 1, title: "Sales Analysis 2024", timestamp: "2025-03-01", file: "sales_2024.csv" },
     { id: 2, title: "Customer Segmentation", timestamp: "2025-02-28", file: "customers.csv" },
@@ -83,6 +86,7 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
   ]);
   
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -90,8 +94,11 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
     setMobileOpen(!mobileOpen);
   };
 
+  const handleCollapseToggle = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   const handleNewChat = () => {
-    // Logic to start a new chat
     setSelectedChat(null);
     if (isMobile) {
       setMobileOpen(false);
@@ -105,7 +112,6 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
     }
   };
 
-  // Add a function to fetch chat history from backend
   const fetchChatHistory = async () => {
     // This would be replaced with actual API call in production
     // const response = await fetch('/api/chat-history');
@@ -119,74 +125,153 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
 
   const drawerContent = (
     <>
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>Sage Chat</Typography>
-        {isMobile && (
-          <IconButton onClick={handleDrawerToggle}>
-            <CloseIcon />
-          </IconButton>
+      <Box sx={{ 
+        p: 2, 
+        display: "flex", 
+        flexDirection: "column",
+        height: "100%"
+      }}>
+        {!isCollapsed && (
+          <>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={handleNewChat}
+              sx={{ 
+                mb: 2,
+                borderColor: 'rgba(255,255,255,0.2)',
+                color: 'white',
+                justifyContent: "flex-start",
+                '&:hover': {
+                  borderColor: 'white',
+                  backgroundColor: 'rgba(255,255,255,0.1)'
+                }
+              }}
+            >
+              New chat
+            </Button>
+
+            <Box sx={{ mb: 4 }}>
+              <Typography 
+                variant="overline" 
+                sx={{ 
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                  letterSpacing: '0.1em',
+                  pl: 1
+                }}
+              >
+                Yesterday
+              </Typography>
+              <List dense>
+                {chatHistory.slice(0, 2).map((chat) => (
+                  <ListItem 
+                    disablePadding 
+                    key={chat.id}
+                  >
+                    <ListItemButton
+                      selected={selectedChat?.id === chat.id}
+                      onClick={() => handleSelectChat(chat)}
+                      sx={{ 
+                        borderRadius: 1,
+                        py: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                        }
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <TableChartIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={chat.title}
+                        primaryTypographyProps={{ 
+                          noWrap: true,
+                          fontSize: '0.875rem'
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+
+              <Typography 
+                variant="overline" 
+                sx={{ 
+                  color: 'rgba(255,255,255,0.7)',
+                  fontSize: '0.7rem',
+                  fontWeight: 500,
+                  letterSpacing: '0.1em',
+                  pl: 1,
+                  mt: 2,
+                  display: 'block'
+                }}
+              >
+                Previous 30 Days
+              </Typography>
+              <List dense>
+                {chatHistory.slice(2).map((chat) => (
+                  <ListItem 
+                    disablePadding 
+                    key={chat.id}
+                  >
+                    <ListItemButton
+                      selected={selectedChat?.id === chat.id}
+                      onClick={() => handleSelectChat(chat)}
+                      sx={{ 
+                        borderRadius: 1,
+                        py: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: 'rgba(255,255,255,0.1)',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.05)',
+                        }
+                      }}
+                    >
+                      <ListItemIcon sx={{ minWidth: 36 }}>
+                        <TableChartIcon fontSize="small" sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                      </ListItemIcon>
+                      <ListItemText 
+                        primary={chat.title}
+                        primaryTypographyProps={{ 
+                          noWrap: true,
+                          fontSize: '0.875rem'
+                        }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
+
+            <Box sx={{ mt: 'auto' }}>
+              <Button
+                component={Link}
+                to="/"
+                variant="text"
+                fullWidth
+                startIcon={<HomeIcon />}
+                sx={{ 
+                  justifyContent: "flex-start", 
+                  textTransform: "none",
+                  color: 'rgba(255,255,255,0.8)',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: 'white'
+                  }
+                }}
+              >
+                Back to Home
+              </Button>
+            </Box>
+          </>
         )}
       </Box>
-
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        fullWidth
-        sx={{ mx: 2, mb: 2 }}
-        onClick={handleNewChat}
-      >
-        New Analysis
-      </Button>
-
-      <Box sx={{ px: 2, mb: 1 }}>
-        <Button
-          component={Link}
-          to="/"
-          variant="text"
-          fullWidth
-          startIcon={<HomeIcon />}
-          sx={{ justifyContent: "flex-start", textTransform: "none" }}
-        >
-          Back to Home
-        </Button>
-      </Box>
-
-      <Divider />
-      
-      <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: "text.secondary" }}>
-        <HistoryIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 1 }} />
-        Recent Sessions
-      </Typography>
-      
-      <List>
-        {chatHistory.map((chat) => (
-          <ListItem 
-            disablePadding 
-            key={chat.id}
-            secondaryAction={
-              <Typography variant="caption" color="text.secondary">
-                {new Date(chat.timestamp).toLocaleDateString()}
-              </Typography>
-            }
-          >
-            <ListItemButton
-              selected={selectedChat?.id === chat.id}
-              onClick={() => handleSelectChat(chat)}
-              sx={{ borderRadius: 1, mx: 1 }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <TableChartIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText 
-                primary={chat.title}
-                secondary={chat.file}
-                primaryTypographyProps={{ noWrap: true }}
-                secondaryTypographyProps={{ noWrap: true, fontSize: '0.75rem' }}
-              />
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
     </>
   );
 
@@ -215,7 +300,14 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
       {/* Sidebar drawer - responsive behavior */}
       <Box
         component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        sx={{ 
+          width: { md: isCollapsed ? collapsedDrawerWidth : drawerWidth }, 
+          flexShrink: { md: 0 },
+          transition: theme.transitions.create(['width'], {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
+        }}
       >
         {isMobile ? (
           <Drawer
@@ -237,13 +329,17 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
           <Drawer
             variant="permanent"
             sx={{
-              width: drawerWidth,
+              width: isCollapsed ? collapsedDrawerWidth : drawerWidth,
               flexShrink: 0,
               "& .MuiDrawer-paper": {
-                width: drawerWidth,
+                width: isCollapsed ? collapsedDrawerWidth : drawerWidth,
                 boxSizing: "border-box",
                 backgroundColor: "#2F3136",
                 color: "white",
+                transition: theme.transitions.create(['width'], {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
               },
             }}
             open
