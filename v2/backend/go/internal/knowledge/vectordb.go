@@ -220,3 +220,25 @@ func (db *MemoryVectorDB) ListAll(ctx context.Context, itemType string) ([]Train
     
     return items, nil
 }
+
+func (db *MemoryVectorDB) DeleteItem(ctx context.Context, id string) error {
+    db.mu.Lock()
+    defer db.mu.Unlock()
+    
+    // Check if item exists
+    if _, exists := db.items[id]; !exists {
+        return fmt.Errorf("item with ID %s not found", id)
+    }
+    
+    // Delete the item
+    delete(db.items, id)
+    
+    // Persist changes to disk
+    if db.persistPath != "" {
+        if err := db.persistToDisk(); err != nil {
+            return fmt.Errorf("failed to persist changes after deletion: %w", err)
+        }
+    }
+    
+    return nil
+}

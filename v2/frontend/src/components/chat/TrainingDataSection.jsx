@@ -21,7 +21,11 @@
 //   MenuItem,
 //   CircularProgress,
 //   Alert,
-//   Divider
+//   Divider,
+//   Card,
+//   CardContent,
+//   CardActions,
+//   Chip
 // } from '@mui/material';
 // import {
 //   ExpandLess,
@@ -31,9 +35,11 @@
 //   DataObject as DataObjectIcon,
 //   Add as AddIcon,
 //   Refresh as RefreshIcon,
-//   Upload as UploadIcon
+//   Upload as UploadIcon,
+//   Delete as DeleteIcon,
+//   Visibility as VisibilityIcon
 // } from '@mui/icons-material';
-// import { fetchTrainingData, uploadTrainingFile, addTrainingData } from '../../utils/api';
+// import { fetchTrainingData, uploadTrainingFile, addTrainingData, deleteTrainingData, viewTrainingData } from '../../utils/api';
 
 // const TrainingDataSection = () => {
 //   const [trainingOpen, setTrainingOpen] = useState(false);
@@ -41,6 +47,12 @@
 //   const [loading, setLoading] = useState(false);
 //   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
 //   const [addDialogOpen, setAddDialogOpen] = useState(false);
+//   const [viewDialogOpen, setViewDialogOpen] = useState(false);
+//   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  
+//   // View state
+//   const [viewItem, setViewItem] = useState(null);
+//   const [deleteItem, setDeleteItem] = useState(null);
   
 //   // Form states
 //   const [formType, setFormType] = useState('ddl');
@@ -59,14 +71,16 @@
 //   const loadTrainingData = async () => {
 //     setLoading(true);
 //     try {
-//         console.log("Fetching training data...");
-//         const data = await fetchTrainingData();
-//         console.log("Training data received:", data);
-//         setTrainingData(data);
-//       } catch (error) {
-//         console.error("Error fetching training data:", error);
-//       } finally {
-//         setLoading(false);
+//       console.log("Fetching training data...");
+//       const data = await fetchTrainingData();
+//       console.log("Training data received:", data);
+//       // Filter out any mock example data
+//       const realData = Array.isArray(data) ? data.filter(item => !item.id.includes('example')) : [];
+//       setTrainingData(realData);
+//     } catch (error) {
+//       console.error("Error fetching training data:", error);
+//     } finally {
+//       setLoading(false);
 //     }
 //   };
   
@@ -98,6 +112,52 @@
   
 //   const handleCloseAddDialog = () => {
 //     setAddDialogOpen(false);
+//   };
+  
+//   const handleViewItem = async (item) => {
+//     setLoading(true);
+//     try {
+//       // If item already has content, use that
+//       if (item.content) {
+//         setViewItem(item);
+//         setViewDialogOpen(true);
+//       } else {
+//         // Otherwise fetch the full item
+//         const fullItem = await viewTrainingData(item.id);
+//         setViewItem(fullItem);
+//         setViewDialogOpen(true);
+//       }
+//     } catch (error) {
+//       console.error("Error viewing training data:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+  
+//   const handleCloseViewDialog = () => {
+//     setViewDialogOpen(false);
+//     setViewItem(null);
+//   };
+  
+//   const handleDeleteConfirmation = (item) => {
+//     setDeleteItem(item);
+//     setDeleteConfirmOpen(true);
+//   };
+  
+//   const handleDeleteItem = async () => {
+//     if (!deleteItem) return;
+    
+//     setLoading(true);
+//     try {
+//       await deleteTrainingData(deleteItem.id);
+//       await loadTrainingData();
+//       setDeleteConfirmOpen(false);
+//       setDeleteItem(null);
+//     } catch (error) {
+//       console.error("Error deleting training data:", error);
+//     } finally {
+//       setLoading(false);
+//     }
 //   };
   
 //   const handleUploadTrainingFile = async () => {
@@ -174,28 +234,28 @@
 //   };
   
 //   // Count training data by type
-//     const getTrainingDataCounts = () => {
-//         const counts = {
-//         ddl: 0,
-//         documentation: 0,
-//         question_sql: 0,
-//         total: 0
-//         };
-        
-//         if (!trainingData || !Array.isArray(trainingData)) {
-//         return counts;
-//         }
-        
-//         // Count actual items
-//         trainingData.forEach(item => {
-//         counts.total++;
-//         if (item.type === 'ddl') counts.ddl++;
-//         else if (item.type === 'documentation') counts.documentation++;
-//         else if (item.type === 'question_sql') counts.question_sql++;
-//         });
-        
-//         return counts;
+//   const getTrainingDataCounts = () => {
+//     const counts = {
+//       ddl: 0,
+//       documentation: 0,
+//       question_sql: 0,
+//       total: 0
 //     };
+    
+//     if (!trainingData || !Array.isArray(trainingData)) {
+//       return counts;
+//     }
+    
+//     // Count actual items
+//     trainingData.forEach(item => {
+//       counts.total++;
+//       if (item.type === 'ddl') counts.ddl++;
+//       else if (item.type === 'documentation') counts.documentation++;
+//       else if (item.type === 'question_sql') counts.question_sql++;
+//     });
+    
+//     return counts;
+//   };
     
 //   const counts = getTrainingDataCounts();
   
@@ -225,32 +285,64 @@
 //                 <AddIcon fontSize="small" />
 //               </IconButton>
 //             </Box>
-//             <Box sx={{ maxHeight: '200px', overflowY: 'auto', mt: 1 }}>
-//                 {trainingData.length === 0 ? (
-//                     <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', py: 2 }}>
-//                     No training data added yet
-//                     </Typography>
-//                 ) : (
-//                     trainingData.map((item, index) => (
-//                     <Box key={index} sx={{ 
-//                         p: 1, 
-//                         mx: 1, 
-//                         mb: 0.5, 
-//                         borderRadius: 1, 
-//                         bgcolor: 'rgba(0,0,0,0.2)',
-//                         fontSize: '0.8rem'
-//                     }}>
-//                         <Typography variant="caption" sx={{ fontWeight: 'bold' }}>
-//                         {item.description || "Unnamed item"}
-//                         </Typography>
-//                         <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary' }}>
-//                         Type: {item.type} • Added: {new Date(item.date_added).toLocaleDateString()}
-//                         </Typography>
-//                     </Box>
-//                     ))
-//                 )}
-//                 </Box>
 //           </Box>
+          
+//           {/* Training Data Items */}
+//           <Box sx={{ maxHeight: '300px', overflowY: 'auto', mt: 1, px: 2 }}>
+//             {loading ? (
+//               <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+//                 <CircularProgress size={24} />
+//               </Box>
+//             ) : trainingData.length === 0 ? (
+//               <Typography variant="caption" sx={{ display: 'block', textAlign: 'center', py: 2 }}>
+//                 No training data added yet
+//               </Typography>
+//             ) : (
+//               trainingData.map((item) => (
+//                 <Card key={item.id} sx={{ mb: 1, bgcolor: 'rgba(0,0,0,0.2)' }}>
+//                   <CardContent sx={{ py: 1, px: 2, '&:last-child': { pb: 1 } }}>
+//                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+//                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
+//                         {item.type === 'ddl' ? (
+//                           <CodeIcon fontSize="small" sx={{ mr: 1, color: 'primary.light' }} />
+//                         ) : item.type === 'documentation' ? (
+//                           <DescriptionIcon fontSize="small" sx={{ mr: 1, color: 'secondary.light' }} />
+//                         ) : (
+//                           <DataObjectIcon fontSize="small" sx={{ mr: 1, color: 'success.light' }} />
+//                         )}
+//                         <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+//                           {item.description || "Unnamed item"}
+//                         </Typography>
+//                       </Box>
+//                       <Chip 
+//                         label={item.type} 
+//                         size="small" 
+//                         sx={{ 
+//                           height: 20, 
+//                           fontSize: '0.625rem',
+//                           bgcolor: item.type === 'ddl' ? 'primary.dark' : 
+//                                   item.type === 'documentation' ? 'secondary.dark' : 'success.dark'
+//                         }} 
+//                       />
+//                     </Box>
+//                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+//                       Added: {new Date(item.date_added).toLocaleDateString()}
+//                     </Typography>
+//                   </CardContent>
+//                   <CardActions sx={{ pt: 0, pb: 1, px: 1, justifyContent: 'flex-end' }}>
+//                     <IconButton size="small" onClick={() => handleViewItem(item)}>
+//                       <VisibilityIcon fontSize="small" />
+//                     </IconButton>
+//                     <IconButton size="small" onClick={() => handleDeleteConfirmation(item)}>
+//                       <DeleteIcon fontSize="small" />
+//                     </IconButton>
+//                   </CardActions>
+//                 </Card>
+//               ))
+//             )}
+//           </Box>
+          
+//           <Divider sx={{ my: 1 }} />
           
 //           <List dense>
 //             <ListItem>
@@ -339,9 +431,9 @@
 //           <Button 
 //             onClick={handleUploadTrainingFile} 
 //             variant="contained" 
-//             disabled={!formFile || formSuccess}
+//             disabled={!formFile || loading || formSuccess}
 //           >
-//             Upload
+//             {loading ? <CircularProgress size={24} /> : "Upload"}
 //           </Button>
 //         </DialogActions>
 //       </Dialog>
@@ -391,9 +483,77 @@
 //           <Button 
 //             onClick={handleAddTrainingData} 
 //             variant="contained" 
-//             disabled={!formTitle || !formContent || formSuccess}
+//             disabled={!formTitle || !formContent || loading || formSuccess}
 //           >
-//             Add
+//             {loading ? <CircularProgress size={24} /> : "Add"}
+//           </Button>
+//         </DialogActions>
+//       </Dialog>
+      
+//       {/* View Training Data Dialog */}
+//       <Dialog open={viewDialogOpen} onClose={handleCloseViewDialog} maxWidth="md" fullWidth>
+//         <DialogTitle>
+//           <Box sx={{ display: 'flex', alignItems: 'center' }}>
+//             {viewItem?.type === 'ddl' ? (
+//               <CodeIcon sx={{ mr: 1 }} />
+//             ) : viewItem?.type === 'documentation' ? (
+//               <DescriptionIcon sx={{ mr: 1 }} />
+//             ) : (
+//               <DataObjectIcon sx={{ mr: 1 }} />
+//             )}
+//             {viewItem?.description || "Training Data"}
+//           </Box>
+//         </DialogTitle>
+//         <DialogContent>
+//           <Box sx={{ mb: 2 }}>
+//             <Chip 
+//               label={viewItem?.type} 
+//               size="small" 
+//               sx={{ mr: 1 }} 
+//             />
+//             <Typography variant="caption" color="text.secondary">
+//               Added: {viewItem?.date_added ? new Date(viewItem.date_added).toLocaleString() : "Unknown"}
+//             </Typography>
+//           </Box>
+          
+//           <TextField
+//             fullWidth
+//             multiline
+//             rows={15}
+//             value={viewItem?.content || ""}
+//             InputProps={{
+//               readOnly: true,
+//             }}
+//             sx={{ 
+//               fontFamily: viewItem?.type === 'ddl' ? 'monospace' : 'inherit',
+//             }}
+//           />
+//         </DialogContent>
+//         <DialogActions>
+//           <Button onClick={handleCloseViewDialog}>Close</Button>
+//         </DialogActions>
+//       </Dialog>
+      
+//       {/* Delete Confirmation Dialog */}
+//       <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+//         <DialogTitle>Confirm Delete</DialogTitle>
+//         <DialogContent>
+//           <Typography>
+//             Are you sure you want to delete "{deleteItem?.description}"?
+//           </Typography>
+//           <Typography variant="caption" color="error">
+//             This action cannot be undone.
+//           </Typography>
+//         </DialogContent>
+//         <DialogActions>
+//           <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+//           <Button 
+//             onClick={handleDeleteItem} 
+//             color="error" 
+//             variant="contained" 
+//             disabled={loading}
+//           >
+//             {loading ? <CircularProgress size={24} /> : "Delete"}
 //           </Button>
 //         </DialogActions>
 //       </Dialog>
@@ -442,7 +602,8 @@ import {
   Refresh as RefreshIcon,
   Upload as UploadIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon
+  Visibility as VisibilityIcon,
+  Close as CloseIcon
 } from '@mui/icons-material';
 import { fetchTrainingData, uploadTrainingFile, addTrainingData, deleteTrainingData, viewTrainingData } from '../../utils/api';
 
@@ -466,6 +627,9 @@ const TrainingDataSection = () => {
   const [formFile, setFormFile] = useState(null);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
+
+  const [deletedItemIds, setDeletedItemIds] = useState(new Set());
+
   
   useEffect(() => {
     if (trainingOpen) {
@@ -479,8 +643,15 @@ const TrainingDataSection = () => {
       console.log("Fetching training data...");
       const data = await fetchTrainingData();
       console.log("Training data received:", data);
-      // Filter out any mock example data
-      const realData = Array.isArray(data) ? data.filter(item => !item.id.includes('example')) : [];
+      
+      // Filter out mock example data and previously deleted items
+      const realData = Array.isArray(data) 
+        ? data.filter(item => 
+            !item.id.includes('example') && 
+            !deletedItemIds.has(item.id)
+          ) 
+        : [];
+      
       setTrainingData(realData);
     } catch (error) {
       console.error("Error fetching training data:", error);
@@ -488,6 +659,7 @@ const TrainingDataSection = () => {
       setLoading(false);
     }
   };
+  
   
   const toggleTrainingSection = () => {
     setTrainingOpen(!trainingOpen);
@@ -549,53 +721,106 @@ const TrainingDataSection = () => {
     setDeleteConfirmOpen(true);
   };
   
-  const handleDeleteItem = async () => {
-    if (!deleteItem) return;
+//   const handleDeleteItem = async () => {
+//     if (!deleteItem) return;
     
-    setLoading(true);
-    try {
-      await deleteTrainingData(deleteItem.id);
-      await loadTrainingData();
-      setDeleteConfirmOpen(false);
-      setDeleteItem(null);
-    } catch (error) {
-      console.error("Error deleting training data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+//     setLoading(true);
+//     try {
+//       await deleteTrainingData(deleteItem.id);
+//       await loadTrainingData();
+//       setDeleteConfirmOpen(false);
+//       setDeleteItem(null);
+//     } catch (error) {
+//       console.error("Error deleting training data:", error);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+    const handleDeleteItem = async () => {
+        if (!deleteItem) return;
+        
+        setLoading(true);
+        
+        try {
+        // Add the deleted item's ID to our tracking set
+        setDeletedItemIds(prev => {
+            const newSet = new Set(prev);
+            newSet.add(deleteItem.id);
+            return newSet;
+        });
+        
+        // Immediately update UI to remove the item
+        setTrainingData(prev => prev.filter(item => item.id !== deleteItem.id));
+        
+        // Close the dialog immediately
+        setDeleteConfirmOpen(false);
+        setDeleteItem(null);
+        
+        // Then send the delete request to the server
+        await deleteTrainingData(deleteItem.id);
+        
+        // No need to reload data since we're tracking deletions
+        } catch (error) {
+        console.error("Error deleting training data:", error);
+        } finally {
+        setLoading(false);
+        }
+    };
   
-  const handleUploadTrainingFile = async () => {
-    if (!formFile) {
-      setFormError('Please select a file to upload');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      
-      const formData = new FormData();
-      formData.append('file', formFile);
-      formData.append('type', formType);
-      formData.append('description', formTitle || formFile.name);
-      
-      await uploadTrainingFile(formData);
-      setFormSuccess('File uploaded successfully!');
-      
-      // Reload training data
-      await loadTrainingData();
-      
-      // Close dialog after a short delay
-      setTimeout(() => {
-        handleCloseUploadDialog();
-      }, 1500);
-    } catch (error) {
-      setFormError(`Upload failed: ${error.message || 'Unknown error'}`);
-      console.error('Error uploading training file:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const handleUploadTrainingFile = async () => {
+        if (!formFile) {
+          setFormError('Please select a file to upload');
+          return;
+        }
+        
+        try {
+          setLoading(true);
+          
+          const formData = new FormData();
+          formData.append('file', formFile);
+          formData.append('type', formType);
+          formData.append('description', formTitle || formFile.name);
+          
+          // Add a retry mechanism
+          let attempts = 0;
+          const maxAttempts = 3;
+          let success = false;
+          let lastError = null;
+          
+          while (attempts < maxAttempts && !success) {
+            try {
+              attempts++;
+              await uploadTrainingFile(formData);
+              success = true;
+              setFormSuccess('File uploaded successfully!');
+            } catch (error) {
+              lastError = error;
+              console.error(`Upload attempt ${attempts} failed:`, error);
+              // Small delay before retry
+              if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+              }
+            }
+          }
+          
+          if (!success) {
+            throw lastError || new Error("Upload failed after multiple attempts");
+          }
+          
+          // Reload training data
+          await loadTrainingData();
+          
+          // Close dialog after a short delay
+          setTimeout(() => {
+            handleCloseUploadDialog();
+          }, 1500);
+        } catch (error) {
+          setFormError(`Upload failed: ${error.message || 'Unknown error'}`);
+          console.error('Error uploading training file:', error);
+        } finally {
+          setLoading(false);
+        }
+      };
   
   const handleAddTrainingData = async () => {
     if (!formTitle) {
@@ -693,7 +918,7 @@ const TrainingDataSection = () => {
           </Box>
           
           {/* Training Data Items */}
-          <Box sx={{ maxHeight: '300px', overflowY: 'auto', mt: 1, px: 2 }}>
+          <Box sx={{ maxHeight: '200px', overflowY: 'auto', mt: 1, px: 2 }}>
             {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
                 <CircularProgress size={24} />
@@ -749,7 +974,7 @@ const TrainingDataSection = () => {
           
           <Divider sx={{ my: 1 }} />
           
-          <List dense>
+          <List dense sx={{ mb: 2 }}> {/* Added margin bottom to fix overlap */}
             <ListItem>
               <ListItemIcon sx={{ minWidth: 36 }}>
                 <CodeIcon fontSize="small" />

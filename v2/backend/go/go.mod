@@ -15,6 +15,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.5.1 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/uuid v1.6.0 // indirect
+	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	github.com/pingcap/errors v0.11.4 // indirect
 	github.com/pingcap/parser v3.1.2+incompatible // indirect

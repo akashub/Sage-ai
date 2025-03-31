@@ -19,11 +19,18 @@ type KnowledgeManager struct {
 }
 
 // VectorDB interface defines methods for vector database operations
+// type VectorDB interface {
+// 	AddTrainingItem(ctx context.Context, item *TrainingItem) error
+// 	FindSimilar(ctx context.Context, query string, itemType string, limit int) ([]TrainingItem, error)
+// 	ListAll(ctx context.Context, dataType string) ([]TrainingItem, error)
+// 	Close()
+// }
 type VectorDB interface {
-	AddTrainingItem(ctx context.Context, item *TrainingItem) error
-	FindSimilar(ctx context.Context, query string, itemType string, limit int) ([]TrainingItem, error)
-	ListAll(ctx context.Context, dataType string) ([]TrainingItem, error)
-	Close()
+    AddTrainingItem(ctx context.Context, item *TrainingItem) error
+    FindSimilar(ctx context.Context, query string, itemType string, limit int) ([]TrainingItem, error)
+    ListAll(ctx context.Context, dataType string) ([]TrainingItem, error)
+    DeleteItem(ctx context.Context, id string) error // Add this method
+    Close()
 }
 
 // CreateKnowledgeManager initializes a new knowledge manager
@@ -254,4 +261,8 @@ func (km *KnowledgeManager) ListTrainingData(ctx context.Context, dataType strin
     
     logger.InfoLogger.Printf("Found %d training data items", len(result))
     return result, nil
+}
+
+func (km *KnowledgeManager) GetVectorDB() VectorDB {
+    return km.vectorDB
 }
