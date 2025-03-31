@@ -226,7 +226,8 @@ func (db *MemoryVectorDB) DeleteItem(ctx context.Context, id string) error {
     defer db.mu.Unlock()
     
     // Check if item exists
-    if _, exists := db.items[id]; !exists {
+    _, exists := db.items[id]
+    if !exists {
         return fmt.Errorf("item with ID %s not found", id)
     }
     

@@ -29,7 +29,7 @@ type VectorDB interface {
     AddTrainingItem(ctx context.Context, item *TrainingItem) error
     FindSimilar(ctx context.Context, query string, itemType string, limit int) ([]TrainingItem, error)
     ListAll(ctx context.Context, dataType string) ([]TrainingItem, error)
-    DeleteItem(ctx context.Context, id string) error // Add this method
+    DeleteItem(ctx context.Context, id string) error
     Close()
 }
 
@@ -265,4 +265,67 @@ func (km *KnowledgeManager) ListTrainingData(ctx context.Context, dataType strin
 
 func (km *KnowledgeManager) GetVectorDB() VectorDB {
     return km.vectorDB
+}
+
+// DeleteTrainingItem removes an item from the knowledge base
+func (km *KnowledgeManager) DeleteTrainingItem(ctx context.Context, id string) error {
+    if km.vectorDB == nil {
+        return fmt.Errorf("vector database is not initialized")
+    }
+    
+    // Check if the vectorDB implements the DeleteItem method
+    if deleter, ok := km.vectorDB.(interface{ DeleteItem(context.Context, string) error }); ok {
+        return deleter.DeleteItem(ctx, id)
+    }
+    
+    return fmt.Errorf("vector database does not support deletion")
+}
+
+// GetTrainingItem retrieves a training item by ID with its full content
+func (km *KnowledgeManager) GetTrainingItem(ctx context.Context, id string) (*TrainingItem, error) {
+    items, err := km.ListTrainingData(ctx, "")
+    if err != nil {
+        return nil, fmt.Errorf("failed to list training data: %w", err)
+    }
+    
+    // Find the item by ID
+    for _, itemData := range items {
+        itemID, ok := itemData["id"].(string)
+        if ok && itemID == id {
+            // Found the item, now construct a full TrainingItem
+            item := &TrainingItem{
+                ID:          id,
+                Type:        itemData["type"].(string),
+                Description: itemData["description"].(string),
+                DateAdded:   itemData["date_added"].(string),
+            }
+            
+            // For VectorDB implementation, get the full item
+            if db, ok := km.vectorDB.(*MemoryVectorDB); ok {
+                db.mu.RLock()
+                defer db.mu.RUnlock()
+                
+                if fullItem, exists := db.items[id]; exists {
+                    // Return the actual item with content
+                    return &fullItem, nil
+                }
+            }
+            
+            // Get content from file system if needed
+            // This is a fallback for when the content isn't stored in memory
+            if item.Type == "ddl" || item.Type == "documentation" {
+                filePath := filepath.Join(km.fileStoragePath, id+".txt")
+                content, err := os.ReadFile(filePath)
+                if err == nil {
+                    item.Content = string(content)
+                } else {
+                    item.Content = "Content not available in file system"
+                }
+            }
+            
+            return item, nil
+        }
+    }
+    
+    return nil, fmt.Errorf("training item with ID %s not found", id)
 }

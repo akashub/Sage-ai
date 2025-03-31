@@ -1,0 +1,61 @@
+{
+  "id": "chat_1743398503233458630",
+  "title": "imdb_subset.csv Analysis",
+  "messages": [
+    {
+      "type": "system",
+      "text": "CSV file \"imdb_subset.csv\" uploaded successfully. Found columns: id, title, vote_average, vote_count, status, release_date, revenue, runtime, adult, budget, imdb_id, original_language, original_title, overview, popularity, tagline, genres, production_companies, production_countries, spoken_languages, keywords",
+      "timestamp": "2025-03-31T05:21:43.231Z",
+      "file": "imdb_subset.csv"
+    },
+    {
+      "type": "user",
+      "text": "Top 3 highest grossing movies of all time",
+      "sender": "user",
+      "timestamp": "2025-03-31T05:21:52.768Z"
+    },
+    {
+      "type": "ai",
+      "text": "Query processed successfully.",
+      "sender": "ai",
+      "timestamp": "2025-03-31T05:21:56.491Z",
+      "results": [
+        {
+          "revenue": 825532764,
+          "title": "Inception"
+        },
+        {
+          "revenue": 701729206,
+          "title": "Interstellar"
+        },
+        {
+          "revenue": 1004558444,
+          "title": "The Dark Knight"
+        }
+      ],
+      "generatedQuery": "SELECT title, revenue FROM movies WHERE revenue \u003e 0 ORDER BY revenue DESC LIMIT 3",
+      "knowledgeContext": [
+        {
+          "content": "",
+          "description": "DDL Schema for IMDB",
+          "id": "ddl_1743397325997164603",
+          "type": "ddl"
+        },
+        {
+          "content": "",
+          "description": "DDL Schema",
+          "id": "ddl_1743398459125941681",
+          "type": "ddl"
+        },
+        {
+          "content": "",
+          "description": "Dataset Documentation for IMDB",
+          "id": "doc_1743398436546289802",
+          "type": "documentation"
+        }
+      ]
+    }
+  ],
+  "timestamp": "2025-03-31T01:21:43.233463008-04:00",
+  "lastUpdated": "2025-03-31T05:21:56.492Z"
+}

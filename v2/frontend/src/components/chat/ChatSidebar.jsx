@@ -462,7 +462,7 @@
 
 // export default ChatSidebar;
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Box, 
   Drawer, 
@@ -525,17 +525,21 @@ const ChatSidebar = ({ selectedChat, setSelectedChat, onNewChat }) => {
   const handleNewChat = async () => {
     try {
       setLoading(true);
+      
+      // Reset the selected chat first - this should trigger UI reset
+      setSelectedChat(null);
+      
       // Create a new chat on the server
       const newChat = await createChat();
       
       // Update local state with the new chat
       setChatHistory(prev => [newChat, ...prev]);
       
-      // Select the new chat
-      setSelectedChat(newChat);
+      // Don't select the new chat immediately - keep UI in welcome state
+      // setSelectedChat(newChat); <-- Comment out or remove this line
       
       // Notify parent component
-      if (onNewChat) onNewChat(newChat);
+      if (onNewChat) onNewChat(null); // Pass null instead of newChat
       
       if (isMobile) {
         setMobileOpen(false);
@@ -558,15 +562,31 @@ const ChatSidebar = ({ selectedChat, setSelectedChat, onNewChat }) => {
     event.stopPropagation();
     try {
       setLoading(true);
-      await deleteChat(chatId);
+      console.log(`Attempting to delete chat: ${chatId}`);
+      
+      // Optimistically update UI first
       setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
       
       // If the deleted chat was selected, clear selection
       if (selectedChat && selectedChat.id === chatId) {
         setSelectedChat(null);
       }
+      
+      // Then actually delete on server
+      const result = await deleteChat(chatId);
+      console.log("Delete result:", result);
+      
+      if (!result.success) {
+        console.error(`Server failed to delete chat ${chatId}:`, result.error);
+        // Optionally, you could add the chat back to the history here if the server delete failed
+        // But most users won't notice if it's just removed from the UI
+      }
     } catch (error) {
-      console.error("Error deleting chat:", error);
+      console.error(`Error in handleDeleteChat for chat ${chatId}:`, error);
+      // Show error to user
+      alert(`Failed to delete chat: ${error.message}`);
+      // Reload chat history to ensure UI consistency
+      loadChatHistory();
     } finally {
       setLoading(false);
     }
