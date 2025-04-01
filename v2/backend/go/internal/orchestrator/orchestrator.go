@@ -261,3 +261,7 @@ func (o *Orchestrator) ProcessQueryWithOptions(ctx context.Context, query string
 func (o *Orchestrator) ProcessQuery(ctx context.Context, query string, csvPath string) (*types.State, error) {
     return o.ProcessQueryWithOptions(ctx, query, csvPath, nil)
 }
+
+func (o *Orchestrator) GetSessionID() string {
+	return o.sessionID
+}

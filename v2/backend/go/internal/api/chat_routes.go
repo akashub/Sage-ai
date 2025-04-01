@@ -566,6 +566,18 @@ func DeleteChatHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func SetupChatRoutesForTesting(router *mux.Router, store *ChatStore) {
+	// Set the package-level chatStore to the test store
+	chatStore = store
+	
+	// Register routes
+	router.HandleFunc("/api/chats", GetChatsHandler).Methods("GET", "OPTIONS")
+    router.HandleFunc("/api/chats", CreateChatHandler).Methods("POST", "OPTIONS")
+    router.HandleFunc("/api/chats/{id}", GetChatHandler).Methods("GET", "OPTIONS")
+    router.HandleFunc("/api/chats/{id}", UpdateChatHandler).Methods("PUT", "OPTIONS")
+    router.HandleFunc("/api/chats/{id}", DeleteChatHandler).Methods("DELETE", "OPTIONS")
+}
+
 // getChatTrainingDataHandler gets training data for a chat
 // func getChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
 //     // Set CORS headers
