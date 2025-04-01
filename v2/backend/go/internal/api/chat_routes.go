@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sage-ai-v2/internal/knowledge"
 	"sage-ai-v2/pkg/logger"
 	"sort"
 	"strings"
@@ -568,110 +567,230 @@ func DeleteChatHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // getChatTrainingDataHandler gets training data for a chat
-func getChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
-    // Set CORS headers
-    w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+// func getChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
+//     // Set CORS headers
+//     w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
     
-    // Handle OPTIONS request
-    if r.Method == "OPTIONS" {
-        w.WriteHeader(http.StatusOK)
-        return
-    }
+//     // Handle OPTIONS request
+//     if r.Method == "OPTIONS" {
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
     
-    // Extract chat ID
-    vars := mux.Vars(r)
-    chatID := vars["id"]
+//     // Extract chat ID
+//     vars := mux.Vars(r)
+//     chatID := vars["id"]
     
-    // Get the chat
-    chat, exists := chatStore.GetChat(chatID)
-    if !exists {
-        http.Error(w, "Chat not found", http.StatusNotFound)
-        return
-    }
+//     // Get the chat
+//     chat, exists := chatStore.GetChat(chatID)
+//     if !exists {
+//         http.Error(w, "Chat not found", http.StatusNotFound)
+//         return
+//     }
     
-    // Get training data items
-    if len(chat.TrainingDataIDs) == 0 {
-        // Return empty array if no training data
-        w.Header().Set("Content-Type", "application/json")
-        json.NewEncoder(w).Encode([]interface{}{})
-        return
-    }
+//     // Get training data items
+//     if len(chat.TrainingDataIDs) == 0 {
+//         // Return empty array if no training data
+//         w.Header().Set("Content-Type", "application/json")
+//         json.NewEncoder(w).Encode([]interface{}{})
+//         return
+//     }
     
-    // Get all training data
-    allData, err := km.ListTrainingData(r.Context(), "")
-    if err != nil {
-        logger.ErrorLogger.Printf("Failed to list training data: %v", err)
-        http.Error(w, "Failed to list training data", http.StatusInternalServerError)
-        return
-    }
+//     // Get all training data
+//     allData, err := km.ListTrainingData(r.Context(), "")
+//     if err != nil {
+//         logger.ErrorLogger.Printf("Failed to list training data: %v", err)
+//         http.Error(w, "Failed to list training data", http.StatusInternalServerError)
+//         return
+//     }
     
-    // Filter for items that belong to this chat
-    chatTrainingData := []map[string]interface{}{}
-    for _, item := range allData {
-        itemID, ok := item["id"].(string)
-        if !ok {
-            continue
-        }
+//     // Filter for items that belong to this chat
+//     chatTrainingData := []map[string]interface{}{}
+//     for _, item := range allData {
+//         itemID, ok := item["id"].(string)
+//         if !ok {
+//             continue
+//         }
         
-        for _, id := range chat.TrainingDataIDs {
-            if itemID == id {
-                chatTrainingData = append(chatTrainingData, item)
-                break
-            }
-        }
-    }
+//         for _, id := range chat.TrainingDataIDs {
+//             if itemID == id {
+//                 chatTrainingData = append(chatTrainingData, item)
+//                 break
+//             }
+//         }
+//     }
     
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(chatTrainingData)
-}
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(chatTrainingData)
+// }
 
-// updateChatTrainingDataHandler updates training data for a chat
-func updateChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
-    // Set CORS headers
-    w.Header().Set("Access-Control-Allow-Origin", "*")
-    w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-    w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+// In chat_routes.go - Get training data for a specific chat
+// func getChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
+//     // Set CORS headers
+//     w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
     
-    // Handle OPTIONS request
-    if r.Method == "OPTIONS" {
-        w.WriteHeader(http.StatusOK)
-        return
-    }
+//     // Handle OPTIONS request
+//     if r.Method == "OPTIONS" {
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
     
-    // Extract chat ID
-    vars := mux.Vars(r)
-    chatID := vars["id"]
+//     // Extract chat ID from URL
+//     vars := mux.Vars(r)
+//     chatID := vars["id"]
     
-    // Get the chat
-    chat, exists := chatStore.GetChat(chatID)
-    if !exists {
-        http.Error(w, "Chat not found", http.StatusNotFound)
-        return
-    }
+//     // Get the chat
+//     chat, exists := chatStore.GetChat(chatID)
+//     if !exists {
+//         http.Error(w, "Chat not found", http.StatusNotFound)
+//         return
+//     }
     
-    // Parse request
-    var req struct {
-        TrainingDataIDs []string `json:"trainingDataIds"`
-    }
+//     // If knowledge manager is available, fetch actual training data items
+//     if km != nil && len(chat.TrainingDataIDs) > 0 {
+//         // Get all training data first
+//         allItems, err := km.ListTrainingData(r.Context(), "")
+//         if err != nil {
+//             logger.ErrorLogger.Printf("Failed to list training data: %v", err)
+//             http.Error(w, fmt.Sprintf("Failed to list training data: %v", err), http.StatusInternalServerError)
+//             return
+//         }
+        
+//         // Filter to include only items associated with this chat
+//         chatTrainingData := []map[string]interface{}{}
+//         for _, item := range allItems {
+//             itemID, ok := item["id"].(string)
+//             if !ok {
+//                 continue
+//             }
+            
+//             for _, id := range chat.TrainingDataIDs {
+//                 if itemID == id {
+//                     chatTrainingData = append(chatTrainingData, item)
+//                     break
+//                 }
+//             }
+//         }
+        
+//         // Return both IDs and actual data items
+//         response := map[string]interface{}{
+//             "trainingDataIds": chat.TrainingDataIDs,
+//             "trainingData": chatTrainingData,
+//         }
+        
+//         w.Header().Set("Content-Type", "application/json")
+//         json.NewEncoder(w).Encode(response)
+//         return
+//     }
     
-    if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        http.Error(w, "Invalid request body", http.StatusBadRequest)
-        return
-    }
+//     // If no knowledge manager or no training data IDs, just return the IDs
+//     response := map[string]interface{}{
+//         "trainingDataIds": chat.TrainingDataIDs,
+//     }
     
-    // Update the chat
-    chat.TrainingDataIDs = req.TrainingDataIDs
-    chat.LastUpdated = time.Now()
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(response)
+// }
+
+// // updateChatTrainingDataHandler updates training data for a chat
+// func updateChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
+//     // Set CORS headers
+//     w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
     
-    // Save the chat
-    if err := chatStore.AddChat(chat); err != nil {
-        logger.ErrorLogger.Printf("Failed to update chat: %v", err)
-        http.Error(w, "Failed to update chat", http.StatusInternalServerError)
-        return
-    }
+//     // Handle OPTIONS request
+//     if r.Method == "OPTIONS" {
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
     
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(chat)
-}
+//     // Extract chat ID
+//     vars := mux.Vars(r)
+//     chatID := vars["id"]
+    
+//     // Get the chat
+//     chat, exists := chatStore.GetChat(chatID)
+//     if !exists {
+//         http.Error(w, "Chat not found", http.StatusNotFound)
+//         return
+//     }
+    
+//     // Parse request
+//     var req struct {
+//         TrainingDataIDs []string `json:"trainingDataIds"`
+//     }
+    
+//     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+//         http.Error(w, "Invalid request body", http.StatusBadRequest)
+//         return
+//     }
+    
+//     // Update the chat
+//     chat.TrainingDataIDs = req.TrainingDataIDs
+//     chat.LastUpdated = time.Now()
+    
+//     // Save the chat
+//     if err := chatStore.AddChat(chat); err != nil {
+//         logger.ErrorLogger.Printf("Failed to update chat: %v", err)
+//         http.Error(w, "Failed to update chat", http.StatusInternalServerError)
+//         return
+//     }
+    
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(chat)
+// }
+
+// // In chat_routes.go - Update training data for a specific chat
+// func updateChatTrainingDataHandler(w http.ResponseWriter, r *http.Request, km *knowledge.KnowledgeManager) {
+//     // Set CORS headers
+//     w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    
+//     // Handle OPTIONS request
+//     if r.Method == "OPTIONS" {
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
+    
+//     // Extract chat ID from URL
+//     vars := mux.Vars(r)
+//     chatID := vars["id"]
+    
+//     // Get the chat
+//     chat, exists := chatStore.GetChat(chatID)
+//     if !exists {
+//         http.Error(w, "Chat not found", http.StatusNotFound)
+//         return
+//     }
+    
+//     // Parse request body
+//     var req struct {
+//         TrainingDataIDs []string `json:"trainingDataIds"`
+//     }
+    
+//     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+//         http.Error(w, "Invalid request body", http.StatusBadRequest)
+//         return
+//     }
+    
+//     // Update the chat with new training data IDs
+//     chat.TrainingDataIDs = req.TrainingDataIDs
+//     chat.LastUpdated = time.Now()
+    
+//     // Save the updated chat
+//     if err := chatStore.AddChat(chat); err != nil {
+//         logger.ErrorLogger.Printf("Failed to update chat with training data: %v", err)
+//         http.Error(w, "Failed to update chat", http.StatusInternalServerError)
+//         return
+//     }
+    
+//     // Return the updated chat
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(chat)
+// }
