@@ -1321,26 +1321,52 @@ const TrainingDataSection = () => {
     setAddDialogOpen(false);
   };
   
+  // const handleViewItem = async (item) => {
+  //   setLoading(true);
+  //   try {
+  //     // If item already has content, use that
+  //     if (item.content) {
+  //       setViewItem(item);
+  //       setViewDialogOpen(true);
+  //     } else {
+  //       // Otherwise fetch the full item
+  //       const fullItem = await viewTrainingData(item.id);
+  //       setViewItem(fullItem);
+  //       setViewDialogOpen(true);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error viewing training data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleViewItem = async (item) => {
     setLoading(true);
     try {
-      // If item already has content, use that
-      if (item.content) {
-        setViewItem(item);
-        setViewDialogOpen(true);
-      } else {
-        // Otherwise fetch the full item
-        const fullItem = await viewTrainingData(item.id);
-        setViewItem(fullItem);
-        setViewDialogOpen(true);
+      console.log("Requesting view for item:", item.id);
+      const fullItem = await viewTrainingData(item.id);
+      console.log("Received full item:", fullItem);
+      
+      // Create a fallback if content is missing
+      if (!fullItem.content) {
+        fullItem.content = "Content not available";
       }
+      
+      setViewItem(fullItem);
+      setViewDialogOpen(true);
     } catch (error) {
       console.error("Error viewing training data:", error);
+      // Create a fallback view item
+      setViewItem({
+        ...item,
+        content: `Error loading content: ${error.message || "Unknown error"}`
+      });
+      setViewDialogOpen(true);
     } finally {
       setLoading(false);
     }
   };
-  
+
   const handleCloseViewDialog = () => {
     setViewDialogOpen(false);
     setViewItem(null);
@@ -1351,46 +1377,85 @@ const TrainingDataSection = () => {
     setDeleteConfirmOpen(true);
   };
   
+  // const handleDeleteItem = async () => {
+  //   if (!deleteItem) return;
+    
+  //   setLoading(true);
+    
+  //   try {
+  //     // Track the item to be deleted
+  //     const itemToDelete = {...deleteItem};
+      
+  //     // Add the deleted item's ID to our tracking set
+  //     setDeletedItemIds(prev => {
+  //       const newSet = new Set(prev);
+  //       newSet.add(deleteItem.id);
+  //       return newSet;
+  //     });
+      
+  //     // Immediately update UI to remove the item
+  //     setTrainingData(prev => prev.filter(item => item.id !== deleteItem.id));
+      
+  //     // Close the dialog immediately
+  //     setDeleteConfirmOpen(false);
+  //     setDeleteItem(null);
+      
+  //     // Then send the delete request to the server
+  //     console.log(`Attempting to delete training item ${itemToDelete.id}`);
+  //     const result = await deleteTrainingData(itemToDelete.id);
+  //     console.log("Delete result:", result);
+      
+  //     if (!result.success) {
+  //       console.error(`Server failed to delete training item: ${itemToDelete.id}`, result);
+  //       // You may want to show an error message here, but keep the item removed from UI
+  //     }
+  //   } catch (error) {
+  //     console.error("Error deleting training data:", error);
+  //     // Optionally show an error message to the user
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleDeleteItem = async () => {
     if (!deleteItem) return;
     
     setLoading(true);
+    setDeleteConfirmOpen(false); // Close dialog immediately
+    
+    // Optimistically update UI first
+    setDeletedItemIds(prev => {
+      const newSet = new Set(prev);
+      newSet.add(deleteItem.id);
+      return newSet;
+    });
+    setTrainingData(prev => prev.filter(item => item.id !== deleteItem.id));
     
     try {
-      // Track the item to be deleted
-      const itemToDelete = {...deleteItem};
+      console.log(`Attempting to delete training item ${deleteItem.id}`);
       
-      // Add the deleted item's ID to our tracking set
-      setDeletedItemIds(prev => {
-        const newSet = new Set(prev);
-        newSet.add(deleteItem.id);
-        return newSet;
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Request timed out")), 10000);
       });
       
-      // Immediately update UI to remove the item
-      setTrainingData(prev => prev.filter(item => item.id !== deleteItem.id));
+      // Race actual request against timeout
+      const result = await Promise.race([
+        deleteTrainingData(deleteItem.id),
+        timeoutPromise
+      ]);
       
-      // Close the dialog immediately
-      setDeleteConfirmOpen(false);
-      setDeleteItem(null);
-      
-      // Then send the delete request to the server
-      console.log(`Attempting to delete training item ${itemToDelete.id}`);
-      const result = await deleteTrainingData(itemToDelete.id);
       console.log("Delete result:", result);
       
-      if (!result.success) {
-        console.error(`Server failed to delete training item: ${itemToDelete.id}`, result);
-        // You may want to show an error message here, but keep the item removed from UI
-      }
+      // Success notification would go here
     } catch (error) {
       console.error("Error deleting training data:", error);
-      // Optionally show an error message to the user
+      // Keep the optimistic UI update but show an error notification
     } finally {
       setLoading(false);
+      setDeleteItem(null);
     }
   };
-
+  
   const handleUploadTrainingFile = async () => {
     if (!formFile) {
       setFormError('Please select a file to upload');

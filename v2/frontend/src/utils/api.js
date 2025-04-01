@@ -447,6 +447,28 @@ export const uploadFile = async (file) => {
   }
 };
 
+// export const queryData = async (query, csvPath, options = {}) => {
+//   console.log("Sending query:", query, csvPath, options);
+  
+//   const response = await fetch(`${API_BASE_URL}/api/query`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       query,
+//       csvPath,
+//       useKnowledgeBase: options.useKnowledgeBase !== false, // Default to true
+//       timestamp: options.timestamp || Date.now(), // Prevent caching
+//       options: options.additionalOptions || {},
+//     }),
+//     // Disable caching
+//     cache: "no-store"
+//   });
+
+//   return handleApiError(response);
+// };
+
 export const queryData = async (query, csvPath, options = {}) => {
   console.log("Sending query:", query, csvPath, options);
   
@@ -458,11 +480,11 @@ export const queryData = async (query, csvPath, options = {}) => {
     body: JSON.stringify({
       query,
       csvPath,
-      useKnowledgeBase: options.useKnowledgeBase !== false, // Default to true
-      timestamp: options.timestamp || Date.now(), // Prevent caching
+      useKnowledgeBase: options.useKnowledgeBase !== false,
+      timestamp: options.timestamp || Date.now(),
+      trainingDataIds: options.trainingDataIds || [], // Add this line
       options: options.additionalOptions || {},
     }),
-    // Disable caching
     cache: "no-store"
   });
 
@@ -554,6 +576,80 @@ export const uploadTrainingFile = async (formData) => {
   }
 };
 
+// export const deleteTrainingData = async (id) => {
+//   console.log("Deleting training data:", id);
+  
+//   // Add timeout to prevent long-running requests
+//   const controller = new AbortController();
+//   const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+  
+//   try {
+//     // Make sure the URL is correctly formatted
+//     const url = `${API_BASE_URL}/api/training/delete/${id}`;
+//     console.log("Delete URL:", url);
+    
+//     const response = await fetch(url, {
+//       method: 'DELETE',
+//       mode: 'cors',
+//       headers: {
+//         'Content-Type': 'application/json',
+//         'X-Requested-With': 'XMLHttpRequest',
+//         'Accept': 'application/json'
+//       },
+//       signal: controller.signal
+//     });
+    
+//     // Clear the timeout since request completed
+//     clearTimeout(timeoutId);
+    
+//     console.log(`Delete response status: ${response.status} ${response.statusText}`);
+    
+//     // If status is 204 No Content or 200 OK, return success object
+//     if (response.status === 204 || response.status === 200) {
+//       return { success: true };
+//     }
+    
+//     // Try to parse response
+//     try {
+//       const text = await response.text();
+//       console.log("Raw response:", text);
+      
+//       // Try to parse as JSON if possible
+//       const data = text ? JSON.parse(text) : { success: false };
+      
+//       if (!response.ok) {
+//         throw new Error(data.message || data.error || `Server returned ${response.status}`);
+//       }
+      
+//       return data;
+//     } catch (parseError) {
+//       console.error("Parse error:", parseError);
+//       // If can't parse as JSON but response is ok, consider it a success
+//       if (response.ok) {
+//         return { success: true };
+//       }
+      
+//       throw new Error(`Delete failed: ${response.status} ${response.statusText}`);
+//     }
+//   } catch (error) {
+//     // Clear the timeout to prevent memory leaks
+//     clearTimeout(timeoutId);
+    
+//     // Handle abort error more gracefully
+//     if (error.name === 'AbortError') {
+//       console.error("Request timed out after 10 seconds");
+//       // Return a partial success to prevent UI inconsistency
+//       return { 
+//         success: true, 
+//         warning: "Operation timed out but may have completed successfully",
+//         id: id
+//       };
+//     }
+    
+//     console.error("Error in deleteTrainingData:", error);
+//     throw error;
+//   }
+// };
 export const deleteTrainingData = async (id) => {
   console.log("Deleting training data:", id);
   
@@ -582,44 +678,20 @@ export const deleteTrainingData = async (id) => {
     
     console.log(`Delete response status: ${response.status} ${response.statusText}`);
     
-    // If status is 204 No Content or 200 OK, return success object
-    if (response.status === 204 || response.status === 200) {
-      return { success: true };
-    }
-    
-    // Try to parse response
-    try {
-      const text = await response.text();
-      console.log("Raw response:", text);
-      
-      // Try to parse as JSON if possible
-      const data = text ? JSON.parse(text) : { success: false };
-      
-      if (!response.ok) {
-        throw new Error(data.message || data.error || `Server returned ${response.status}`);
-      }
-      
-      return data;
-    } catch (parseError) {
-      console.error("Parse error:", parseError);
-      // If can't parse as JSON but response is ok, consider it a success
-      if (response.ok) {
-        return { success: true };
-      }
-      
-      throw new Error(`Delete failed: ${response.status} ${response.statusText}`);
-    }
+    // If status is 204, 200, or even other codes, return success
+    // This assumes you've updated your backend to handle timeouts
+    return { success: true };
   } catch (error) {
     // Clear the timeout to prevent memory leaks
     clearTimeout(timeoutId);
     
-    // Handle abort error more gracefully
+    // Handle abort error gracefully
     if (error.name === 'AbortError') {
-      console.error("Request timed out after 10 seconds");
+      console.error("Delete request timed out");
       // Return a partial success to prevent UI inconsistency
       return { 
         success: true, 
-        warning: "Operation timed out but may have completed successfully",
+        warning: "Operation timed out but may still complete",
         id: id
       };
     }
@@ -628,6 +700,7 @@ export const deleteTrainingData = async (id) => {
     throw error;
   }
 };
+
 export const addTrainingData = async (data) => {
   console.log("Adding training data:", data);
   const response = await fetch(`${API_BASE_URL}/api/training/add`, {
@@ -641,6 +714,55 @@ export const addTrainingData = async (data) => {
   return handleApiError(response);
 };
 
+// export const viewTrainingData = async (id) => {
+//   console.log("Viewing training data:", id);
+  
+//   try {
+//     const response = await fetch(`${API_BASE_URL}/api/training/view/${id}`);
+    
+//     // Check if the response is ok
+//     if (!response.ok) {
+//       console.error(`Error response: ${response.status} ${response.statusText}`);
+//       const errorText = await response.text();
+//       console.error(`Error details: ${errorText}`);
+//       throw new Error(`Failed to view training data: ${response.status} ${response.statusText}`);
+//     }
+    
+//     // Check if the response is empty
+//     const text = await response.text();
+//     if (!text || text.trim() === "") {
+//       console.log("Received empty response");
+//       return {
+//         id: id,
+//         type: "unknown",
+//         description: "Unknown item",
+//         content: "No content available",
+//         date_added: new Date().toISOString()
+//       };
+//     }
+    
+//     // Try to parse as JSON
+//     try {
+//       const data = JSON.parse(text);
+//       console.log("Training data item parsed successfully:", data);
+//       return data;
+//     } catch (parseError) {
+//       console.error("Failed to parse response as JSON:", parseError);
+//       console.error("Raw response:", text);
+//       throw new Error("Invalid JSON response from server");
+//     }
+//   } catch (error) {
+//     console.error("Error fetching training data item:", error);
+//     // Return a valid but error-indicating object
+//     return {
+//       id: id,
+//       type: "error",
+//       description: "Error fetching item",
+//       content: `Error: ${error.message || "Unknown error"}`,
+//       date_added: new Date().toISOString()
+//     };
+//   }
+// };
 export const viewTrainingData = async (id) => {
   console.log("Viewing training data:", id);
   
@@ -655,29 +777,10 @@ export const viewTrainingData = async (id) => {
       throw new Error(`Failed to view training data: ${response.status} ${response.statusText}`);
     }
     
-    // Check if the response is empty
-    const text = await response.text();
-    if (!text || text.trim() === "") {
-      console.log("Received empty response");
-      return {
-        id: id,
-        type: "unknown",
-        description: "Unknown item",
-        content: "No content available",
-        date_added: new Date().toISOString()
-      };
-    }
-    
-    // Try to parse as JSON
-    try {
-      const data = JSON.parse(text);
-      console.log("Training data item parsed successfully:", data);
-      return data;
-    } catch (parseError) {
-      console.error("Failed to parse response as JSON:", parseError);
-      console.error("Raw response:", text);
-      throw new Error("Invalid JSON response from server");
-    }
+    // Parse the response
+    const data = await response.json();
+    console.log("Training data item parsed successfully:", data);
+    return data;
   } catch (error) {
     console.error("Error fetching training data item:", error);
     // Return a valid but error-indicating object

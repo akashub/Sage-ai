@@ -12,6 +12,7 @@ import { AuthProvider }from "./components/auth/AuthContext";
 import AuthModalWrapper from "./components/auth/AuthModalWrapper";
 import ChatInterface from "./pages/ChatInterface";
 import OAuthCallback from "./components/auth/OAuthCallback";
+import { ChatProvider } from "./context/ChatContext"; // Add this import
 
 const theme = createTheme({
   palette: {
@@ -63,6 +64,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <ChatProvider>
         <ThemeProvider theme={theme}>
           <CssBaseline />
           <div
@@ -108,6 +110,7 @@ function App() {
             </Routes>
           </div>
         </ThemeProvider>
+        </ChatProvider>
       </AuthProvider>
     </Router>
   );
