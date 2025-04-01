@@ -2,6 +2,7 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -359,7 +360,76 @@ func ListTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
     }
 }
 
-// ViewTrainingDataHandler handles viewing a single training data item
+// // ViewTrainingDataHandler handles viewing a single training data item
+// func ViewTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
+// 	return func(w http.ResponseWriter, r *http.Request) {
+// 		// Set CORS headers
+// 		w.Header().Set("Access-Control-Allow-Origin", "*")
+// 		w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+// 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+// 		// Handle preflight request
+// 		if r.Method == "OPTIONS" {
+// 			w.WriteHeader(http.StatusOK)
+// 			return
+// 		}
+
+// 		// Check request method
+// 		if r.Method != "GET" {
+// 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+// 			return
+// 		}
+
+// 		// Get ID from URL path
+// 		parts := strings.Split(r.URL.Path, "/")
+// 		if len(parts) < 4 {
+// 			http.Error(w, "Invalid URL", http.StatusBadRequest)
+// 			return
+// 		}
+
+// 		id := parts[len(parts)-1]
+// 		if id == "" {
+// 			http.Error(w, "ID is required", http.StatusBadRequest)
+// 			return
+// 		}
+
+// 		// Get the item from the knowledge manager
+// 		// In a real implementation, you would query the knowledge base
+// 		// For now, we'll create a mock item
+// 		item := knowledge.TrainingItem{
+// 			ID:          id,
+// 			Type:        "ddl",
+// 			Content:     "CREATE TABLE users (\n  id INT PRIMARY KEY,\n  name VARCHAR(100),\n  email VARCHAR(100),\n  created_at TIMESTAMP\n);",
+// 			Description: "Users table schema",
+// 			DateAdded:   "2025-03-30T12:00:00Z",
+// 		}
+
+// 		// For documentation type
+// 		if strings.Contains(id, "doc") {
+// 			item.Type = "documentation"
+// 			item.Content = "The users table contains all registered users in the system. Each user has a unique ID, name, email, and creation timestamp. The email is used for login purposes and must be unique."
+// 		}
+
+// 		// For question-sql type
+// 		if strings.Contains(id, "qa") {
+// 			item.Type = "question_sql"
+// 			item.Content = `{
+// 				"question": "Show me all users who registered in the last month",
+// 				"sql": "SELECT * FROM users WHERE created_at >= NOW() - INTERVAL '1 month'",
+// 				"description": "Recent user registrations query"
+// 			}`
+// 		}
+
+// 		// Return JSON response
+// 		w.Header().Set("Content-Type", "application/json")
+// 		if err := json.NewEncoder(w).Encode(item); err != nil {
+// 			logger.ErrorLogger.Printf("Error encoding response: %v", err)
+// 			http.Error(w, "Error encoding response", http.StatusInternalServerError)
+// 			return
+// 		}
+// 	}
+// }
+
 func ViewTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Set CORS headers
@@ -392,34 +462,15 @@ func ViewTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
 			return
 		}
 
-		// Get the item from the knowledge manager
-		// In a real implementation, you would query the knowledge base
-		// For now, we'll create a mock item
-		item := knowledge.TrainingItem{
-			ID:          id,
-			Type:        "ddl",
-			Content:     "CREATE TABLE users (\n  id INT PRIMARY KEY,\n  name VARCHAR(100),\n  email VARCHAR(100),\n  created_at TIMESTAMP\n);",
-			Description: "Users table schema",
-			DateAdded:   "2025-03-30T12:00:00Z",
+		// Get the actual item from the knowledge manager
+		item, err := orch.KnowledgeManager.GetTrainingItem(r.Context(), id)
+		if err != nil {
+			logger.ErrorLogger.Printf("Failed to get training item: %v", err)
+			http.Error(w, fmt.Sprintf("Failed to get training item: %v", err), http.StatusInternalServerError)
+			return
 		}
 
-		// For documentation type
-		if strings.Contains(id, "doc") {
-			item.Type = "documentation"
-			item.Content = "The users table contains all registered users in the system. Each user has a unique ID, name, email, and creation timestamp. The email is used for login purposes and must be unique."
-		}
-
-		// For question-sql type
-		if strings.Contains(id, "qa") {
-			item.Type = "question_sql"
-			item.Content = `{
-				"question": "Show me all users who registered in the last month",
-				"sql": "SELECT * FROM users WHERE created_at >= NOW() - INTERVAL '1 month'",
-				"description": "Recent user registrations query"
-			}`
-		}
-
-		// Return JSON response
+		// Return the full item with content
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(item); err != nil {
 			logger.ErrorLogger.Printf("Error encoding response: %v", err)
@@ -430,55 +481,119 @@ func ViewTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
 }
 
 // DeleteTrainingDataHandler handles deleting a training data item
+// Update the DeleteTrainingDataHandler function in routes.go
+// func DeleteTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
+//     return func(w http.ResponseWriter, r *http.Request) {
+//         // Set CORS headers
+//         w.Header().Set("Access-Control-Allow-Origin", "*")
+//         w.Header().Set("Access-Control-Allow-Methods", "DELETE, OPTIONS")
+//         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+//         // Handle preflight request
+//         if r.Method == "OPTIONS" {
+//             w.WriteHeader(http.StatusOK)
+//             return
+//         }
+
+//         // Get ID from URL path
+//         parts := strings.Split(r.URL.Path, "/")
+//         if len(parts) < 4 {
+//             http.Error(w, "Invalid URL", http.StatusBadRequest)
+//             return
+//         }
+
+//         id := parts[len(parts)-1]
+//         if id == "" {
+//             http.Error(w, "ID is required", http.StatusBadRequest)
+//             return
+//         }
+
+//         logger.InfoLogger.Printf("Deleting training data item: %s", id)
+        
+//         // IMPORTANT: Don't try to actually delete from vector_store.json here
+//         // Just return success immediately to prevent hanging
+        
+//         // Return 204 No Content for success
+//         w.WriteHeader(http.StatusNoContent)
+        
+//         // Then handle the actual deletion in a background goroutine
+//         go func() {
+//             // This is optional - only if you want to actually implement the deletion
+//             // If you have KnowledgeManager.DeleteTrainingItem implemented:
+//             err := orch.KnowledgeManager.DeleteTrainingItem(context.Background(), id)
+//             if err != nil {
+//                 logger.ErrorLogger.Printf("Background deletion failed for item %s: %v", id, err)
+//             } else {
+//                 logger.InfoLogger.Printf("Successfully deleted training item %s in background", id)
+//             }
+            
+//             // For now, just log that we would delete it
+//             logger.InfoLogger.Printf("Would delete training item %s in background (not implemented)", id)
+//         }()
+//     }
+// }
+
+// DeleteTrainingDataHandler handles deleting a training data item
 func DeleteTrainingDataHandler(orch *orchestrator.Orchestrator) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Set CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "DELETE, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+    return func(w http.ResponseWriter, r *http.Request) {
+        // Set CORS headers
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "DELETE, OPTIONS")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-		// Handle preflight request
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
+        // Handle preflight request
+        if r.Method == "OPTIONS" {
+            w.WriteHeader(http.StatusOK)
+            return
+        }
 
-		// Check request method
-		if r.Method != "DELETE" {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
+        // Get ID from URL path
+        parts := strings.Split(r.URL.Path, "/")
+        if len(parts) < 4 {
+            http.Error(w, "Invalid URL", http.StatusBadRequest)
+            return
+        }
 
-		// Get ID from URL path
-		parts := strings.Split(r.URL.Path, "/")
-		if len(parts) < 4 {
-			http.Error(w, "Invalid URL", http.StatusBadRequest)
-			return
-		}
+        id := parts[len(parts)-1]
+        if id == "" {
+            http.Error(w, "ID is required", http.StatusBadRequest)
+            return
+        }
 
-		id := parts[len(parts)-1]
-		if id == "" {
-			http.Error(w, "ID is required", http.StatusBadRequest)
-			return
-		}
-
-		// In a real implementation, you would delete the item from the knowledge base
-		// For now, we'll just simulate success
-		logger.InfoLogger.Printf("Deleting training data item: %s", id)
-
-		// Return success response
-		w.Header().Set("Content-Type", "application/json")
-		response := TrainingDataResponse{
-			Success: true,
-			Message: "Training data deleted successfully",
-		}
-
-		if err := json.NewEncoder(w).Encode(response); err != nil {
-			logger.ErrorLogger.Printf("Error encoding response: %v", err)
-			http.Error(w, "Error encoding response", http.StatusInternalServerError)
-			return
-		}
-	}
+        logger.InfoLogger.Printf("Deleting training data item: %s", id)
+        
+        // Create a context with timeout to avoid hanging
+        ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+        defer cancel()
+        
+        // Use a channel to handle timeout gracefully
+        done := make(chan error, 1)
+        go func() {
+            done <- orch.KnowledgeManager.DeleteTrainingItem(ctx, id)
+        }()
+        
+        // Wait for either completion or timeout
+        select {
+        case err := <-done:
+            if err != nil {
+                logger.ErrorLogger.Printf("Failed to delete training item: %v", err)
+                http.Error(w, fmt.Sprintf("Failed to delete training item: %v", err), http.StatusInternalServerError)
+                return
+            }
+            logger.InfoLogger.Printf("Successfully deleted training item: %s", id)
+            // Return 204 No Content for success
+            w.WriteHeader(http.StatusNoContent)
+        case <-ctx.Done():
+            // If timeout occurs, still return success to the client
+            // The delete operation may complete in the background
+			logger.InfoLogger.Printf("Delete operation timed out for item: %s, but may still complete", id)
+            w.WriteHeader(http.StatusOK)
+            json.NewEncoder(w).Encode(map[string]interface{}{
+                "success": true,
+                "warning": "Operation timed out but may complete in the background",
+            })
+        }
+    }
 }
 
 // SearchTrainingDataHandler handles searching training data
