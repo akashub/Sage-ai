@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Box, 
   Drawer, 
@@ -12,7 +12,10 @@ import {
   Divider,
   Button,
   useMediaQuery,
-  useTheme
+  useTheme,
+  Collapse,
+  Badge,
+  Tooltip
 } from "@mui/material";
 import { 
   Add as AddIcon, 
@@ -21,21 +24,29 @@ import {
   TableChart as TableChartIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
-  Home as HomeIcon
+  Home as HomeIcon,
+  ExpandLess,
+  ExpandMore,
+  Code as CodeIcon,
+  Description as DescriptionIcon,
+  DataObject as DataObjectIcon,
+  Refresh as RefreshIcon,
+  Upload as UploadIcon,
+  ChevronLeft as ChevronLeftIcon
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
+import TrainingDataSection from "./TrainingDataSection";
+import { fetchChatHistory, createChat, deleteChat } from "../../utils/api";
 
+// Fixed width for the drawer
 const drawerWidth = 300;
 
-const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
-  // Mock chat history - in a real app, you'd fetch this from your backend
-  const [chatHistory, setChatHistory] = useState([
-    { id: 1, title: "Sales Analysis 2024", timestamp: "2025-03-01", file: "sales_2024.csv" },
-    { id: 2, title: "Customer Segmentation", timestamp: "2025-02-28", file: "customers.csv" },
-    { id: 3, title: "Movies Database Query", timestamp: "2025-02-25", file: "movies.csv" },
-  ]);
-  
+const ChatSidebar = ({ selectedChat, setSelectedChat, onNewChat }) => {
+  const [chatHistory, setChatHistory] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -43,11 +54,36 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleNewChat = () => {
-    // Logic to start a new chat
-    setSelectedChat(null);
-    if (isMobile) {
-      setMobileOpen(false);
+  const handleSidebarToggle = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleNewChat = async () => {
+    try {
+      setLoading(true);
+      
+      // Reset the selected chat first - this should trigger UI reset
+      setSelectedChat(null);
+      
+      // Create a new chat on the server
+      const newChat = await createChat();
+      
+      // Update local state with the new chat
+      setChatHistory(prev => [newChat, ...prev]);
+      
+      // Don't select the new chat immediately - keep UI in welcome state
+      // setSelectedChat(newChat); <-- Comment out or remove this line
+      
+      // Notify parent component
+      if (onNewChat) onNewChat(null); // Pass null instead of newChat
+      
+      if (isMobile) {
+        setMobileOpen(false);
+      }
+    } catch (error) {
+      console.error("Error creating new chat:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -58,25 +94,74 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
     }
   };
 
-  // Add a function to fetch chat history from backend
-  const fetchChatHistory = async () => {
-    // This would be replaced with actual API call in production
-    // const response = await fetch('/api/chat-history');
-    // const data = await response.json();
-    // setChatHistory(data);
+  const handleDeleteChat = async (chatId, event) => {
+    event.stopPropagation();
+    try {
+      setLoading(true);
+      console.log(`Attempting to delete chat: ${chatId}`);
+      
+      // Optimistically update UI first
+      setChatHistory(prev => prev.filter(chat => chat.id !== chatId));
+      
+      // If the deleted chat was selected, clear selection
+      if (selectedChat && selectedChat.id === chatId) {
+        setSelectedChat(null);
+      }
+      
+      // Then actually delete on server
+      const result = await deleteChat(chatId);
+      console.log("Delete result:", result);
+      
+      if (!result.success) {
+        console.error(`Server failed to delete chat ${chatId}:`, result.error);
+        // Optionally, you could add the chat back to the history here if the server delete failed
+        // But most users won't notice if it's just removed from the UI
+      }
+    } catch (error) {
+      console.error(`Error in handleDeleteChat for chat ${chatId}:`, error);
+      // Show error to user
+      alert(`Failed to delete chat: ${error.message}`);
+      // Reload chat history to ensure UI consistency
+      loadChatHistory();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load chat history
+  const loadChatHistory = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchChatHistory();
+      setChatHistory(data || []);
+    } catch (error) {
+      console.error("Error fetching chat history:", error);
+      setChatHistory([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    fetchChatHistory();
+    loadChatHistory();
   }, []);
 
   const drawerContent = (
     <>
-      <Box sx={{ p: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <Box sx={{ 
+        p: 2, 
+        display: "flex", 
+        alignItems: "center", 
+        justifyContent: "space-between" 
+      }}>
         <Typography variant="h6" sx={{ fontWeight: "bold" }}>Sage Chat</Typography>
-        {isMobile && (
+        {isMobile ? (
           <IconButton onClick={handleDrawerToggle}>
             <CloseIcon />
+          </IconButton>
+        ) : (
+          <IconButton onClick={handleSidebarToggle}>
+            <ChevronLeftIcon />
           </IconButton>
         )}
       </Box>
@@ -87,6 +172,7 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
         fullWidth
         sx={{ mx: 2, mb: 2 }}
         onClick={handleNewChat}
+        disabled={loading}
       >
         New Analysis
       </Button>
@@ -106,41 +192,134 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
 
       <Divider />
       
-      <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: "text.secondary" }}>
-        <HistoryIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 1 }} />
-        Recent Sessions
-      </Typography>
+      {/* Training Data Section */}
+      <TrainingDataSection />
       
-      <List>
-        {chatHistory.map((chat) => (
-          <ListItem 
-            disablePadding 
-            key={chat.id}
-            secondaryAction={
-              <Typography variant="caption" color="text.secondary">
-                {new Date(chat.timestamp).toLocaleDateString()}
-              </Typography>
-            }
-          >
-            <ListItemButton
-              selected={selectedChat?.id === chat.id}
-              onClick={() => handleSelectChat(chat)}
-              sx={{ borderRadius: 1, mx: 1 }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <TableChartIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText 
-                primary={chat.title}
-                secondary={chat.file}
-                primaryTypographyProps={{ noWrap: true }}
-                secondaryTypographyProps={{ noWrap: true, fontSize: '0.75rem' }}
-              />
-            </ListItemButton>
+      <Divider />
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
+          <HistoryIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 1 }} />
+          Recent Sessions
+        </Typography>
+        <Tooltip title="Refresh">
+          <IconButton size="small" onClick={loadChatHistory} disabled={loading}>
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+      
+      <List sx={{ maxHeight: '40vh', overflow: 'auto' }}>
+        {chatHistory.length === 0 ? (
+          <ListItem>
+            <ListItemText
+              primary="No recent chats"
+              primaryTypographyProps={{ 
+                variant: 'body2', 
+                color: 'text.secondary',
+                align: 'center'
+              }}
+            />
           </ListItem>
-        ))}
+        ) : (
+          chatHistory.map((chat) => (
+            <ListItem 
+              disablePadding 
+              key={chat.id}
+              secondaryAction={
+                <IconButton 
+                  edge="end" 
+                  size="small" 
+                  onClick={(e) => handleDeleteChat(chat.id, e)}
+                  sx={{ opacity: 0, '&:hover': { opacity: 1 } }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              }
+              sx={{ 
+                '&:hover .MuiIconButton-root': { 
+                  opacity: 0.7 
+                } 
+              }}
+            >
+              <ListItemButton
+                selected={selectedChat?.id === chat.id}
+                onClick={() => handleSelectChat(chat)}
+                sx={{ borderRadius: 1, mx: 1 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <TableChartIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={chat.title || "Untitled Chat"}
+                  secondary={
+                    <Box component="span" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="caption" component="span">
+                        {chat.file || "No file"}
+                      </Typography>
+                      <Typography variant="caption" component="span" sx={{ ml: 1 }}>
+                        {new Date(chat.timestamp).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  }
+                  primaryTypographyProps={{ noWrap: true }}
+                  secondaryTypographyProps={{ noWrap: true }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))
+        )}
       </List>
     </>
+  );
+
+  // Collapsed sidebar content
+  const collapsedDrawerContent = (
+    <Box sx={{ py: 2, display: "flex", flexDirection: "column", alignItems: "center" }}>
+      <IconButton onClick={handleSidebarToggle} sx={{ mb: 2 }}>
+        <MenuIcon />
+      </IconButton>
+      
+      <Tooltip title="New Analysis">
+        <IconButton 
+          onClick={handleNewChat} 
+          sx={{ 
+            my: 1, 
+            backgroundColor: "primary.main", 
+            color: "white",
+            '&:hover': { backgroundColor: "primary.dark" }
+          }}
+        >
+          <AddIcon />
+        </IconButton>
+      </Tooltip>
+      
+      <Tooltip title="Back to Home">
+        <IconButton 
+          component={Link} 
+          to="/" 
+          sx={{ my: 1 }}
+        >
+          <HomeIcon />
+        </IconButton>
+      </Tooltip>
+      
+      <Divider sx={{ width: '80%', my: 2 }} />
+      
+      <Tooltip title="Chat History">
+        <IconButton sx={{ my: 1 }}>
+          <Badge badgeContent={chatHistory.length} color="primary">
+            <HistoryIcon />
+          </Badge>
+        </IconButton>
+      </Tooltip>
+      
+      <Tooltip title="Knowledge Base">
+        <IconButton sx={{ my: 1 }}>
+          <DataObjectIcon />
+        </IconButton>
+      </Tooltip>
+    </Box>
   );
 
   return (
@@ -168,7 +347,12 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
       {/* Sidebar drawer - responsive behavior */}
       <Box
         component="nav"
-        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+        sx={{ 
+          width: { 
+            md: sidebarOpen ? drawerWidth : 60 
+          },
+          flexShrink: { md: 0 } 
+        }}
       >
         {isMobile ? (
           <Drawer
@@ -190,18 +374,24 @@ const ChatSidebar = ({ selectedChat, setSelectedChat }) => {
           <Drawer
             variant="permanent"
             sx={{
-              width: drawerWidth,
+              width: sidebarOpen ? drawerWidth : 60,
               flexShrink: 0,
               "& .MuiDrawer-paper": {
-                width: drawerWidth,
+                width: sidebarOpen ? drawerWidth : 60,
                 boxSizing: "border-box",
                 backgroundColor: "#2F3136",
                 color: "white",
+                border: "none",
+                transition: theme => theme.transitions.create('width', {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.enteringScreen,
+                }),
+                overflowX: 'hidden'
               },
             }}
             open
           >
-            {drawerContent}
+            {sidebarOpen ? drawerContent : collapsedDrawerContent}
           </Drawer>
         )}
       </Box>
