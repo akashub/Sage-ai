@@ -546,6 +546,10 @@ The `tests/api/helpers.go` provides essential test utilities:
 
 Located in: `tests/api/`
 
+![Sprint 3 tests SS 1](./readme_assets/Sprint3BackendSS1.png)
+![Sprint 3 tests SS 2](./readme_assets/Sprint3BackendSS2.png)
+
+
 These tests verify that the HTTP API endpoints function correctly, handling requests and responses as expected.
 
 #### Chat API Tests
