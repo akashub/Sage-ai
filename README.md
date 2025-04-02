@@ -36,20 +36,23 @@ Data analysts and business users often struggle with writing complex SQL queries
 │  Chat Interface │         │  Orchestrator & Node Management          │─────────┤ SQL Generation  │
 │  File Upload    │         │  Database Connections                    │         │ Query Validation│
 │  Visualization  │         │  Session & State Management              │         │ Healing Logic   │
+│  Knowledge UI   │         │  Knowledge Base System                   │         │                 │
 └─────────────────┘         └─────────────────────────────────────────┘         └─────────────────┘
                                                 │
                                                 │
                                                 ▼
-                                    ┌───────────────────────┐
-                                    │    Database Layer     │
-                                    │  (PostgreSQL/SQLite)  │
-                                    └───────────────────────┘
+                             ┌────────────────────────────────┐
+                             │         Database Layer         │
+                             │    (PostgreSQL/SQLite &        │
+                             │     Vector Knowledge Store)    │
+                             └────────────────────────────────┘
 ```
 
 
 - **Three-Tier Architecture:** Sage.AI uses a three-tier system with React frontend, Go backend, and Python LLM service working together seamlessly.
 - **Go Backend as Orchestrator:** The Go server functions as the central orchestrator, handling HTTP requests, authentication flows, and coordinating the entire query processing pipeline.
 - **Python for AI Processing:** The Python microservice specializes in LLM interactions, performing natural language analysis, SQL generation, and query validation/healing.
+- **Knowledge Base System:** A vector database that stores and retrieves contextually relevant database schemas, documentation, and example queries to enhance SQL generation accuracy.
 - **Request Flow:** When a user submits a natural language query, the React frontend sends it to the Go backend, which routes appropriate processing tasks to the Python service.
 - **Stateful Processing:** The Go orchestrator maintains state throughout the query lifecycle, tracking progress and managing retries if needed.
 - **Communication Protocol:** The Go-Python bridge uses HTTP/REST for inter-service communication, with JSON-formatted requests and responses.
@@ -69,13 +72,15 @@ The AI system consists of three main layers:
 - Vector Store for Similarity Search
 - Base Knowledge Base for Query Patterns
 - Dataset-Specific Knowledge Base
+- DDL Schemas & Documentation Storage
+- Question-SQL Pairs Repository
 
 ### 2. Orchestration Layer
 - Main Orchestrator for Query Processing
 - Node Factory for Component Creation
 - Processing Nodes:
   - Analyzer (Natural Language Understanding)
-  - Generator (SQL Creation)
+  - Generator (SQL Creation with Knowledge Context)
   - Validator (Query Safety)
   - Executor (Query Execution)
 
@@ -83,6 +88,7 @@ The AI system consists of three main layers:
 - Database Connection Management
 - Schema Handling
 - Query Execution Engine
+- Chat Session Persistence
 
 ## Tech Stack
 - Backend: Golang, Python, FastAPI
@@ -211,7 +217,7 @@ Please find our Sprint 2 demo videos here [Sprint 2 Demo Videos](https://uflorid
   - Context-aware query generation
   - Formatted result presentation
 
-## Testing Infrastructure
+## Testing Infrastructure (Sprint 2)
 
 ### Backend Testing
 - Comprehensive unit tests for authentication handlers and services
@@ -227,25 +233,162 @@ Please find our Sprint 2 demo videos here [Sprint 2 Demo Videos](https://uflorid
 ![SignUP form](./readme_assets/SignUpformCypress.jpeg)
 ![SignIn form](./readme_assets/SignInformCypress.jpeg)
 
+# 🚀 Sprint 3: Knowledge Base and Chat Session Management
+
+## 🌟 Overview
+
+Sprint 3 transformed Sage.AI into a more intelligent and context-aware SQL assistant through two major advancements: a sophisticated Knowledge Base system and enhanced Chat Session Management. These improvements allow for more accurate SQL query generation by leveraging contextual information and enable seamless conversation continuity across multiple interactions.
+
+Please find our Sprint 3 demo videos here [Sprint 3 Demo Videos](https://uflorida-my.sharepoint.com/personal/yashkishore_ufl_edu/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Fyashkishore%5Fufl%5Fedu%2FDocuments%2FSoftware%20Engineering%2FSprint3&ga=1)
+
+### Knowledge Base System
+![Knowledge Base Demo](./readme_assets/KnowledgeBase.gif)
+
+### Enhanced Chat Sessions
+![Chat Session Demo](./readme_assets/ChatSessions.gif)
+
+## Key Achievements (Sprint 3)
+
+- **Knowledge Base System**
+  - Vector database for semantic similarity search across three types of training data (DDL schemas, documentation, question-SQL pairs)
+  - Knowledge context integration with query generation for more accurate SQL conversion
+  
+- **Advanced Chat Management**
+  - Persistent chat sessions with JSON-based storage
+  - Chat-specific training data associations
+  - Automatic chat state recovery and continuation
+  - Enhanced UI for chat creation, selection, history navigation, and deletion
+
+- **Enhanced Query Processing**
+  - Context-aware query generation with knowledge base integration
+  - Improved error handling and recovery mechanisms
+  - More natural language responses with contextual awareness
+
+- **Comprehensive API Development**
+  - Complete set of endpoints for knowledge management
+  - Chat session persistence and management endpoints
+  - Training data association endpoints
+
+## Testing Infrastructure (Sprint 3)
+
+We expanded our testing infrastructure to cover the new Knowledge Base and Chat Session Management features:
+
+### Backend Testing Organization
+- Strategically organized tests by component (orchestrator, API, knowledge)
+- Created a comprehensive Makefile for simplified test execution
+- Implemented custom mocking strategy for isolated component testing
+
+![Sprint 3 Backend Tests 1](./readme_assets/Sprint3BackendSS1.png)
+![Sprint 3 Backend Tests 2](./readme_assets/Sprint3BackendSS2.png)
+
+### Knowledge Base Component Tests
+- 36 unit tests for vector database operations, knowledge retrieval, and item management
+- 90% code coverage for Knowledge Base components
+- Key test areas: vector database creation, training item CRUD operations, similarity search
+
+### Chat Session Tests
+- 24 unit tests for chat creation, persistence, state management, and history
+- 85% code coverage for Chat Management components
+- Key test areas: chat store operations, chat-training data associations, state synchronization
+
+### Integration Tests
+- 12 end-to-end tests for the complete query processing pipeline with knowledge context
+- 75% coverage of integration points between components
+- Key test areas: knowledge integration with query generation, chat session recovery
+
+## Technical Implementation
+
+### Knowledge Base System
+
+The Knowledge Base system consists of three key components:
+
+1. **Vector Database**
+   - In-memory vector store with disk persistence
+   - Simple vector embeddings for semantic similarity
+   - Efficient similarity search for knowledge retrieval
+
+2. **Knowledge Manager**
+   - Three types of knowledge items:
+     - DDL Schemas (database structure information)
+     - Documentation (business logic and domain knowledge)
+     - Question-SQL Pairs (example queries with natural language questions)
+   - CRUD operations for knowledge items
+   - Context retrieval for query enhancement
+
+3. **Knowledge Integration**
+   - Seamless integration with the query processing pipeline
+   - Optional knowledge base usage toggle for users
+   - Knowledge context tracking in chat responses
+
+### Chat Session Management
+
+The enhanced chat system includes:
+
+1. **Chat Store**
+   - JSON-based persistence for chat sessions
+   - Efficient CRUD operations for chat data
+   - Automatic session recovery
+
+2. **Chat-Training Data Association**
+   - Ability to link training data items to specific chats
+   - Prioritized knowledge context based on chat associations
+   - Chat-specific knowledge management
+
+3. **UI Enhancements**
+   - New chat creation and selection
+   - Chat history navigation
+   - Chat deletion and management
+
 ## 🔍 API Documentation
 
-### Authentication Endpoints
+### Authentication Endpoints (Sprint 2)
 - **POST /api/auth/signup** - Creates a new user account
 - **POST /api/auth/signin** - Authenticates an existing user
 - **POST /api/auth/oauth/github** and **POST /api/auth/oauth/google** - Handles OAuth authentication
 
-### Query Endpoints
+### Query Endpoints (Sprint 2)
 - **POST /api/upload** - Uploads a CSV file for querying
 - **POST /api/query** - Processes a natural language query
 
+### Knowledge Base Endpoints (Sprint 3)
+- **GET /api/training/list** - Lists all training data items
+- **POST /api/training/upload** - Uploads a file as training data
+- **POST /api/training/add** - Adds training data manually
+- **GET /api/training/view/{id}** - Views a specific training data item
+- **DELETE /api/training/delete/{id}** - Deletes a training data item
+
+### Chat Session Endpoints (Sprint 3)
+- **GET /api/chats** - Lists all chat sessions
+- **POST /api/chats** - Creates a new chat session
+- **GET /api/chats/{id}** - Gets a specific chat by ID
+- **PUT /api/chats/{id}** - Updates a chat session
+- **DELETE /api/chats/{id}** - Deletes a chat session
+- **GET /api/chats/{id}/training** - Gets training data associated with a chat
+- **POST /api/chats/{id}/training** - Updates training data associated with a chat
+
 ## 🚀 Next Steps
 
-For Sprint 3, we are planning:
-1. Advanced data visualization with charts and export functionality
-2. Multi-database support (PostgreSQL, MySQL, SQL Server)
-3. Context adding in Vector store in the form of DDL Schemas, Business logic, Prior SQL Queries
-4. Knowledge base of correct Query-Question pair for context
-5. Chat history and New Session Creation
+For future sprints, we plan to:
+
+1. **Enhanced Visualization**
+   - Interactive charts and graphs for query results
+   - Customizable visualization options
+   - Visual query builder integration
+
+2. **Advanced Knowledge Management**
+   - Automated knowledge extraction from databases
+   - Knowledge graph visualization
+   - Collaborative knowledge base editing
+
+3. **Multi-Database Support**
+   - Expanded database connector system
+   - Cross-database query capabilities
+   - Schema inference and validation
+
+4. **Enterprise Features**
+   - Team collaboration on knowledge bases
+   - Access control and permissions
+   - Audit logging and compliance
 
 ## 📋 License
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details. -->
@@ -547,6 +690,29 @@ We expanded our testing infrastructure to cover the new Knowledge Base and Chat 
 - 12 end-to-end tests for the complete query processing pipeline with knowledge context
 - 75% coverage of integration points between components
 - Key test areas: knowledge integration with query generation, chat session recovery
+
+### Frontend Testing
+We significantly expanded our frontend test coverage with comprehensive Jest tests:
+
+![Frontend Tests Screenshot 1](./readme_assets/Sprint3FrontendSS1.jpeg)
+![Frontend Tests Screenshot 2](./readme_assets/Sprint3FrontendSS2.jpeg)
+
+- **Authentication Tests**
+  - Tests for AuthContext rendering and functionality
+  - Modal open/close handling tests
+  - Authentication mode switching tests
+  - Token management and session handling
+
+- **Component Tests**
+  - Footer component rendering and functionality
+  - Chat interface message handling and display
+  - File upload functionality tests
+  - Loading states and error handling
+
+- **Integration Tests**
+  - Authentication flow integration
+  - Chat interface with backend integration
+  - State management across components
 
 ## Technical Implementation
 
