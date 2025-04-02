@@ -793,7 +793,7 @@ For future sprints, we plan to:
 
 ## 👥 Team Contributions
 
-- **Aakash Singh**: Knowledge Base System, Vector Database, Backend Integration, Testing Infrastructure
+- **Aakash Singh**: Knowledge Base System, Vector Database, Frontend-Backend Integration, Testing Infrastructure
 - **Bommidi Nitin Reddy**: Chat Session Management, Query Processing, Database Integration, Testing
 - **Sudiksha Rajavaram**: Frontend UI Enhancement, Chat Interface, Training Data Component, Visualization
 - **Yash Kishore**: Frontend-Backend Integration, Chat Component, State Management, End-to-End Testing
