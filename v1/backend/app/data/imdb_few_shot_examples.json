@@ -1,0 +1,653 @@
+{
+    "examples": [
+      {
+        "id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "natural_query": "Show me popular action movies with ratings above 8",
+        "sql_query": "SELECT title, vote_average, popularity FROM movies WHERE genres LIKE '%Action%' AND vote_average > 8 AND vote_count > 1000 ORDER BY popularity DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_rating",
+          "complexity": "medium",
+          "tags": ["genre", "rating", "popularity"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440000",
+        "natural_query": "What are the highest grossing movies from 2022",
+        "sql_query": "SELECT title, revenue, release_date FROM movies WHERE EXTRACT(YEAR FROM release_date) = 2022 AND revenue > 0 ORDER BY revenue DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "temporal_revenue",
+          "complexity": "medium",
+          "tags": ["temporal", "revenue"]
+        }
+      },
+      {
+        "id": "6ba7b810-9dad-11d1-80b4-00c04fd430c8",
+        "natural_query": "Find English language horror movies",
+        "sql_query": "SELECT title, original_language, vote_average FROM movies WHERE genres LIKE '%Horror%' AND original_language = 'en' ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "language_genre",
+          "complexity": "easy",
+          "tags": ["language", "genre"]
+        }
+      },
+      {
+        "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        "natural_query": "Which movies had a budget over 100 million and made a profit",
+        "sql_query": "SELECT title, budget, revenue, (revenue - budget) as profit FROM movies WHERE budget > 100000000 AND revenue > budget ORDER BY profit DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "financial",
+          "complexity": "medium",
+          "tags": ["budget", "revenue", "profit"]
+        }
+      },
+      {
+        "id": "8f14e45f-ceea-4627-9c37-2125230d4c42",
+        "natural_query": "Show me popular movies released in the last 3 months",
+        "sql_query": "SELECT title, release_date, popularity FROM movies WHERE release_date >= CURRENT_DATE - INTERVAL '3 months' ORDER BY popularity DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "temporal_popularity",
+          "complexity": "medium",
+          "tags": ["temporal", "popularity", "recent"]
+        }
+      },
+      {
+        "id": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+        "natural_query": "Find long comedy movies over 2 hours",
+        "sql_query": "SELECT title, runtime, vote_average FROM movies WHERE genres LIKE '%Comedy%' AND runtime > 120 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_runtime",
+          "complexity": "easy",
+          "tags": ["genre", "runtime"]
+        }
+      },
+      {
+        "id": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+        "natural_query": "What are the most popular non-English movies",
+        "sql_query": "SELECT title, original_language, popularity FROM movies WHERE original_language != 'en' ORDER BY popularity DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "language_popularity",
+          "complexity": "easy",
+          "tags": ["language", "popularity"]
+        }
+      },
+      {
+        "id": "b3f0c7f6-d138-4ca7-a925-1df4cd8398f0",
+        "natural_query": "Show highly rated movies with at least 10000 votes",
+        "sql_query": "SELECT title, vote_average, vote_count FROM movies WHERE vote_count >= 10000 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "rating_votes",
+          "complexity": "easy",
+          "tags": ["rating", "votes"]
+        }
+      },
+      {
+        "id": "c2e25bfe-8246-4c44-a8fb-4381b3fc1e6f",
+        "natural_query": "Find action movies that are also sci-fi",
+        "sql_query": "SELECT title, genres, vote_average FROM movies WHERE genres LIKE '%Action%' AND genres LIKE '%Science Fiction%' ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "multi_genre",
+          "complexity": "medium",
+          "tags": ["genre", "multiple"]
+        }
+      },
+      {
+        "id": "d1e45a5c-90f2-4d15-b271-80944e9b618d",
+        "natural_query": "Show me high-budget action movies from 2020 onwards with good ratings and high popularity",
+        "sql_query": "SELECT title, budget, vote_average, popularity, release_date FROM movies WHERE genres LIKE '%Action%' AND budget > 50000000 AND release_date >= '2020-01-01' AND vote_average > 7 ORDER BY popularity DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "complex_multi",
+          "complexity": "hard",
+          "tags": ["genre", "budget", "temporal", "rating", "popularity"]
+        }
+      },
+      {
+        "id": "e2f5bca1-3f2d-4847-9a31-7f9c8d2e1234",
+        "natural_query": "Find family-friendly animated movies with high ratings and good box office performance",
+        "sql_query": "SELECT title, vote_average, revenue, genres FROM movies WHERE genres LIKE '%Animation%' AND adult = false AND vote_average > 7.5 AND revenue > 100000000 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_family_revenue",
+          "complexity": "medium",
+          "tags": ["genre", "family", "revenue", "rating"]
+        }
+      },
+      {
+        "id": "f3a6cbd2-4e3e-5958-0b42-8f0d9e3f5678",
+        "natural_query": "Which movies have the best profit ratio compared to their budget",
+        "sql_query": "SELECT title, budget, revenue, ROUND(CAST(revenue AS FLOAT) / NULLIF(budget, 0), 2) as roi FROM movies WHERE budget > 0 AND revenue > 0 ORDER BY roi DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "financial_ratio",
+          "complexity": "hard",
+          "tags": ["budget", "revenue", "calculation"]
+        }
+      },
+      {
+        "id": "g4b7dce3-5f4f-6069-1c53-9g1e0f4f9012",
+        "natural_query": "Show me movies about space or astronomy based on their keywords",
+        "sql_query": "SELECT title, vote_average, keywords FROM movies WHERE keywords LIKE '%space%' OR keywords LIKE '%astronomy%' OR keywords LIKE '%galaxy%' ORDER BY vote_average DESC LIMIT 20",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "keyword_search",
+          "complexity": "medium",
+          "tags": ["keywords", "theme"]
+        }
+      },
+      {
+        "id": "h5c8edf4-6g5g-7170-2d64-0h2f1g5g0123",
+        "natural_query": "What are the most successful movies from non-US production countries",
+        "sql_query": "SELECT title, production_countries, revenue FROM movies WHERE production_countries NOT LIKE '%United States of America%' AND revenue > 0 ORDER BY revenue DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "country_revenue",
+          "complexity": "medium",
+          "tags": ["country", "revenue"]
+        }
+      },
+      {
+        "id": "i6d9feg5-7h6h-8281-3e75-1i3g2h6h1234",
+        "natural_query": "Find movies with multiple spoken languages that performed well internationally",
+        "sql_query": "SELECT title, spoken_languages, revenue, popularity FROM movies WHERE spoken_languages LIKE '%,%' AND revenue > 50000000 ORDER BY popularity DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "multilingual_performance",
+          "complexity": "medium",
+          "tags": ["languages", "revenue", "international"]
+        }
+      },
+      {
+        "id": "j7e0gfh6-8i7i-9392-4f86-2j4h3i7i2345",
+        "natural_query": "Which production companies have made the most profitable movies in the last 5 years",
+        "sql_query": "SELECT production_companies, SUM(revenue - budget) as total_profit, COUNT(*) as movie_count FROM movies WHERE release_date >= CURRENT_DATE - INTERVAL '5 years' AND budget > 0 AND revenue > 0 GROUP BY production_companies ORDER BY total_profit DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "company_analysis",
+          "complexity": "hard",
+          "tags": ["company", "profit", "temporal", "aggregation"]
+        }
+      },
+      {
+        "id": "k8f1hgi7-9j8j-0403-5g97-3k5i4j8j3456",
+        "natural_query": "Show me movies with similar themes to Inception based on keywords",
+        "sql_query": "SELECT title, keywords, vote_average FROM movies WHERE keywords LIKE '%dream%' OR keywords LIKE '%subconscious%' OR keywords LIKE '%mind%' ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "thematic_similarity",
+          "complexity": "medium",
+          "tags": ["keywords", "theme", "similar"]
+        }
+      },
+      {
+        "id": "l9g2ihj8-0k9k-1514-6h08-4l6j5k9k4567",
+        "natural_query": "Find critically acclaimed movies that were box office failures",
+        "sql_query": "SELECT title, vote_average, revenue, budget, (revenue - budget) as profit FROM movies WHERE vote_average > 8 AND vote_count > 1000 AND revenue < budget AND budget > 10000000 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "rating_financial_contrast",
+          "complexity": "hard",
+          "tags": ["rating", "revenue", "budget", "profit"]
+        }
+      },
+      {
+        "id": "m0h3jik9-1l0l-2625-7i19-5m7k6l0l5678",
+        "natural_query": "What are the longest movies in each genre with good ratings",
+        "sql_query": "WITH RankedMovies AS (SELECT title, genres, runtime, vote_average, RANK() OVER (PARTITION BY genres ORDER BY runtime DESC) as rank FROM movies WHERE vote_average > 7) SELECT title, genres, runtime, vote_average FROM RankedMovies WHERE rank = 1 ORDER BY runtime DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_runtime_ranking",
+          "complexity": "hard",
+          "tags": ["genre", "runtime", "window_function"]
+        }
+      },
+      {
+        "id": "n1i4jkl0-2m1m-3736-8j20-6n8l7m1m6789",
+        "natural_query": "Show me movies with memorable taglines and high popularity",
+        "sql_query": "SELECT title, tagline, popularity FROM movies WHERE tagline IS NOT NULL AND tagline != '' AND length(tagline) > 20 ORDER BY popularity DESC LIMIT 20",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "tagline_popularity",
+          "complexity": "easy",
+          "tags": ["tagline", "popularity"]
+        }
+      },
+      {
+        "id": "o2j5klm1-3n2n-4847-9k31-7o9m8n2n7890",
+        "natural_query": "Find movies that were successful in both English and non-English speaking markets",
+        "sql_query": "SELECT title, original_language, spoken_languages, revenue FROM movies WHERE revenue > 500000000 AND spoken_languages LIKE '%English%' AND spoken_languages LIKE '%,%' ORDER BY revenue DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "global_success",
+          "complexity": "medium",
+          "tags": ["language", "revenue", "international"]
+        }
+      },
+      {
+        "id": "p3k6lmn2-4o3o-5958-0l42-8p0n9o3n8901",
+        "natural_query": "Compare average ratings between original movies and their sequels based on titles",
+        "sql_query": "SELECT m1.title, m1.vote_average as original_rating, m2.title as sequel, m2.vote_average as sequel_rating FROM movies m1 JOIN movies m2 ON m2.title LIKE CONCAT(m1.title, '%2') OR m2.title LIKE CONCAT(m1.title, '% 2') WHERE m1.vote_count > 1000 AND m2.vote_count > 1000 ORDER BY m1.vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "sequel_comparison",
+          "complexity": "hard",
+          "tags": ["rating", "comparison", "self_join"]
+        }
+      },
+      {
+        "id": "q4l7mno3-5p4p-6069-1m53-9q1o0p4p9012",
+        "natural_query": "Show movies with strong seasonal performance (released during holiday seasons)",
+        "sql_query": "SELECT title, release_date, revenue FROM movies WHERE (EXTRACT(MONTH FROM release_date) = 12 OR EXTRACT(MONTH FROM release_date) = 7) AND revenue > 100000000 AND release_date >= '2015-01-01' ORDER BY revenue DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "seasonal_analysis",
+          "complexity": "medium",
+          "tags": ["temporal", "revenue", "seasonal"]
+        }
+      },
+      {
+        "id": "r5m8nop4-6q5q-7170-2n64-0r2p1q5q0123",
+        "natural_query": "Find movies that had significant differences between their original titles and released titles",
+        "sql_query": "SELECT title, original_title, original_language, vote_average FROM movies WHERE title != original_title AND original_language != 'en' AND vote_count > 500 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "title_variation",
+          "complexity": "easy",
+          "tags": ["title", "language", "comparison"]
+        }
+      },
+      {
+        "id": "s6n9opq5-7r6r-8281-3o75-1s3q2r6r1234",
+        "natural_query": "Which genres have the highest average budget to revenue ratio in the past decade",
+        "sql_query": "WITH GenreStats AS (SELECT genres, AVG(CAST(revenue AS FLOAT) / NULLIF(budget, 0)) as roi, COUNT(*) as movie_count FROM movies WHERE release_date >= CURRENT_DATE - INTERVAL '10 years' AND budget > 1000000 GROUP BY genres HAVING COUNT(*) > 10) SELECT genres, ROUND(roi, 2) as average_roi, movie_count FROM GenreStats ORDER BY roi DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_roi_analysis",
+          "complexity": "hard",
+          "tags": ["genre", "financial", "temporal", "aggregation"]
+        }
+      },
+      {
+        "id": "t7o0pqr6-8s7s-9392-4p86-2t4r3s7s2345",
+        "natural_query": "Find movies where the overview mentions award-winning or critically acclaimed",
+        "sql_query": "SELECT title, overview, vote_average FROM movies WHERE (LOWER(overview) LIKE '%award%' OR LOWER(overview) LIKE '%critically acclaimed%' OR LOWER(overview) LIKE '%oscar%') AND vote_average > 7 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "overview_analysis",
+          "complexity": "medium",
+          "tags": ["overview", "text_search", "rating"]
+        }
+      },
+      {
+        "id": "u8p1qrs7-9t8t-0403-5q97-3u5s4t8t3456",
+        "natural_query": "Compare performance of movies based on their release day of the week",
+        "sql_query": "SELECT EXTRACT(DOW FROM release_date) as day_of_week, COUNT(*) as movie_count, ROUND(AVG(revenue)) as avg_revenue FROM movies WHERE release_date >= '2010-01-01' AND revenue > 0 GROUP BY day_of_week ORDER BY avg_revenue DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "release_day_analysis",
+          "complexity": "medium",
+          "tags": ["temporal", "revenue", "aggregation"]
+        }
+      },
+      {
+        "id": "v9q2rst8-0u9u-1514-6r08-4v6t5u9u4567",
+        "natural_query": "Find movies with the most diverse production countries and languages",
+        "sql_query": "SELECT title, production_countries, spoken_languages, revenue FROM movies WHERE (LENGTH(production_countries) - LENGTH(REPLACE(production_countries, ',', ''))) >= 2 AND (LENGTH(spoken_languages) - LENGTH(REPLACE(spoken_languages, ',', ''))) >= 2 ORDER BY revenue DESC LIMIT 20",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "international_collaboration",
+          "complexity": "hard",
+          "tags": ["country", "language", "collaboration"]
+        }
+      },
+      {
+        "id": "w0r3stu9-1v0v-2625-7s19-5w7u6v0v5678",
+        "natural_query": "Which movies had the biggest gap between their budget and revenue",
+        "sql_query": "SELECT title, budget, revenue, (revenue - budget) as profit_gap, ROUND(CAST(revenue AS FLOAT) / NULLIF(budget, 0), 2) as roi FROM movies WHERE budget > 0 AND revenue > 0 ORDER BY profit_gap DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "financial_gap",
+          "complexity": "medium",
+          "tags": ["budget", "revenue", "calculation"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174000",
+        "natural_query": "What are some good movies to watch?",
+        "sql_query": "SELECT title, vote_average, overview FROM movies WHERE vote_average > 7.5 AND vote_count > 1000 ORDER BY vote_average DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "basic_rating_filter",
+          "complexity": "easy",
+          "tags": ["rating", "basic"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987001",
+        "natural_query": "Show me recent movies",
+        "sql_query": "SELECT title, release_date, overview FROM movies WHERE release_date >= CURRENT_DATE - INTERVAL '6 months' ORDER BY release_date DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "basic_temporal",
+          "complexity": "easy",
+          "tags": ["temporal", "recent"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440002",
+        "natural_query": "I want to watch something in French",
+        "sql_query": "SELECT title, original_title, vote_average FROM movies WHERE original_language = 'fr' AND vote_count > 100 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "language_filter",
+          "complexity": "easy",
+          "tags": ["language", "basic"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174003",
+        "natural_query": "What are the most expensive movies ever made?",
+        "sql_query": "SELECT title, budget, revenue, release_date FROM movies WHERE budget > 0 ORDER BY budget DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "budget_sort",
+          "complexity": "easy",
+          "tags": ["budget", "sorting"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440004",
+        "natural_query": "Find me successful action movies from the 90s",
+        "sql_query": "SELECT title, release_date, revenue, vote_average FROM movies WHERE genres LIKE '%Action%' AND release_date BETWEEN '1990-01-01' AND '1999-12-31' AND revenue > 100000000 ORDER BY revenue DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_period_revenue",
+          "complexity": "medium",
+          "tags": ["genre", "temporal", "revenue"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174005",
+        "natural_query": "Which movies made the most profit?",
+        "sql_query": "SELECT title, budget, revenue, (revenue - budget) as profit FROM movies WHERE budget > 0 AND revenue > 0 ORDER BY profit DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "profit_calculation",
+          "complexity": "medium",
+          "tags": ["financial", "calculation"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440006",
+        "natural_query": "I like superhero movies, what should I watch?",
+        "sql_query": "SELECT title, vote_average FROM movies WHERE (LOWER(keywords) LIKE '%superhero%' OR LOWER(keywords) LIKE '%comic%' OR LOWER(keywords) LIKE '%marvel%' OR LOWER(keywords) LIKE '%dc comics%') AND vote_average > 7 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "keyword_theme",
+          "complexity": "medium",
+          "tags": ["keywords", "theme"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174007",
+        "natural_query": "List the highest rated movies in each genre",
+        "sql_query": "WITH RankedMovies AS (SELECT title, genres, vote_average, RANK() OVER (PARTITION BY genres ORDER BY vote_average DESC) as rank FROM movies WHERE vote_count > 1000) SELECT title, genres, vote_average FROM RankedMovies WHERE rank = 1 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_best",
+          "complexity": "hard",
+          "tags": ["genre", "ranking", "window_function"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440008",
+        "natural_query": "Find movies similar to Inception",
+        "sql_query": "SELECT title, overview, vote_average FROM movies WHERE (LOWER(keywords) LIKE '%dream%' OR LOWER(keywords) LIKE '%mind%' OR LOWER(overview) LIKE '%dream%' OR LOWER(overview) LIKE '%consciousness%') AND title != 'Inception' AND vote_average > 6 ORDER BY vote_average DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "content_similarity",
+          "complexity": "medium",
+          "tags": ["keywords", "overview", "similarity"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174009",
+        "natural_query": "Show me movies that were hits with audiences but not critics",
+        "sql_query": "SELECT title, vote_average, popularity, revenue FROM movies WHERE popularity > (SELECT AVG(popularity) * 2 FROM movies) AND vote_average < 6 AND revenue > 100000000 ORDER BY popularity DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "popularity_rating_contrast",
+          "complexity": "hard",
+          "tags": ["popularity", "rating", "subquery"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440010",
+        "natural_query": "I want something scary to watch tonight",
+        "sql_query": "SELECT title, vote_average, overview FROM movies WHERE genres LIKE '%Horror%' AND vote_count > 500 AND vote_average > 6.5 ORDER BY vote_average DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_mood",
+          "complexity": "easy",
+          "tags": ["genre", "rating", "conversational"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174011",
+        "natural_query": "Show me movies like The Matrix",
+        "sql_query": "SELECT title, overview, vote_average FROM movies WHERE (LOWER(keywords) LIKE '%cyberpunk%' OR LOWER(keywords) LIKE '%virtual reality%' OR LOWER(keywords) LIKE '%artificial intelligence%') AND title != 'The Matrix' AND vote_average > 6 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "thematic_similarity",
+          "complexity": "medium",
+          "tags": ["keywords", "theme", "similarity"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987012",
+        "natural_query": "What are some good date night movies?",
+        "sql_query": "SELECT title, vote_average, overview FROM movies WHERE (genres LIKE '%Romance%' OR genres LIKE '%Comedy%') AND vote_average > 7 AND adult = false AND vote_count > 1000 ORDER BY popularity DESC LIMIT 12",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "mood_based",
+          "complexity": "medium",
+          "tags": ["genre", "rating", "context"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440013",
+        "natural_query": "What's popular on Netflix right now?",
+        "sql_query": "SELECT title, popularity, vote_average FROM movies WHERE release_date >= CURRENT_DATE - INTERVAL '2 years' AND vote_count > 1000 ORDER BY popularity DESC, vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "current_trending",
+          "complexity": "medium",
+          "tags": ["popularity", "temporal", "recent"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174014",
+        "natural_query": "I have 3 hours to kill, what's a good long movie?",
+        "sql_query": "SELECT title, runtime, vote_average, overview FROM movies WHERE runtime >= 160 AND vote_average > 7 AND vote_count > 500 ORDER BY vote_average DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "runtime_preference",
+          "complexity": "medium",
+          "tags": ["runtime", "rating", "duration"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987015",
+        "natural_query": "Which movies won Oscars last year?",
+        "sql_query": "SELECT title, vote_average, overview FROM movies WHERE LOWER(overview) LIKE '%oscar%win%' OR LOWER(overview) LIKE '%academy award%win%' AND release_date >= CURRENT_DATE - INTERVAL '2 years' ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "award_recognition",
+          "complexity": "medium",
+          "tags": ["awards", "recognition", "text_search"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440016",
+        "natural_query": "Give me some good sci-fi movies that aren't too old",
+        "sql_query": "SELECT title, release_date, vote_average FROM movies WHERE genres LIKE '%Science Fiction%' AND release_date >= '2015-01-01' AND vote_average > 7 AND vote_count > 1000 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_period",
+          "complexity": "medium",
+          "tags": ["genre", "temporal", "rating"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174017",
+        "natural_query": "Show me underrated movies that deserve more attention",
+        "sql_query": "SELECT title, vote_average, vote_count, popularity FROM movies WHERE vote_average > 7.5 AND vote_count < (SELECT AVG(vote_count) FROM movies) AND popularity < (SELECT AVG(popularity) FROM movies) ORDER BY vote_average DESC LIMIT 20",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "hidden_gems",
+          "complexity": "hard",
+          "tags": ["rating", "popularity", "subquery"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987018",
+        "natural_query": "What are some mind-bending thriller movies?",
+        "sql_query": "SELECT title, vote_average, overview FROM movies WHERE genres LIKE '%Thriller%' AND (LOWER(keywords) LIKE '%twist%' OR LOWER(keywords) LIKE '%psychological%' OR LOWER(keywords) LIKE '%mind%bend%') AND vote_average > 7 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "genre_keyword_combo",
+          "complexity": "medium",
+          "tags": ["genre", "keywords", "theme"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440019",
+        "natural_query": "What movies came out this summer?",
+        "sql_query": "SELECT title, release_date, vote_average FROM movies WHERE EXTRACT(MONTH FROM release_date) IN (6, 7, 8) AND EXTRACT(YEAR FROM release_date) = EXTRACT(YEAR FROM CURRENT_DATE) ORDER BY release_date DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "seasonal_release",
+          "complexity": "medium",
+          "tags": ["temporal", "seasonal", "current"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174020",
+        "natural_query": "What's the best movie franchise to binge watch?",
+        "sql_query": "WITH MovieSeries AS (SELECT REGEXP_REPLACE(title, '\\s*[0-9]+$|\\s+Part\\s+[0-9]+$', '') as series_name, COUNT(*) as movie_count, AVG(vote_average) as avg_rating FROM movies WHERE vote_count > 1000 GROUP BY series_name HAVING COUNT(*) > 2) SELECT series_name, movie_count, ROUND(avg_rating, 2) as average_rating FROM MovieSeries ORDER BY avg_rating DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "franchise_analysis",
+          "complexity": "hard",
+          "tags": ["series", "aggregation", "pattern_matching"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440021",
+        "natural_query": "I want a family movie that adults will enjoy too",
+        "sql_query": "SELECT title, vote_average, overview FROM movies WHERE genres LIKE '%Animation%' OR genres LIKE '%Family%' AND vote_average > 7.5 AND vote_count > 5000 AND (LOWER(overview) LIKE '%all ages%' OR LOWER(overview) LIKE '%family%' OR LOWER(overview) LIKE '%everyone%') ORDER BY vote_average DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "audience_crossover",
+          "complexity": "medium",
+          "tags": ["genre", "audience", "rating"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987022",
+        "natural_query": "Which directors are most successful at making hit movies?",
+        "sql_query": "SELECT production_companies, COUNT(*) as movie_count, ROUND(AVG(vote_average), 2) as avg_rating, SUM(CASE WHEN revenue > budget THEN 1 ELSE 0 END) as profitable_movies FROM movies WHERE budget > 0 AND revenue > 0 GROUP BY production_companies HAVING COUNT(*) >= 5 ORDER BY avg_rating DESC LIMIT 20",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "creator_success",
+          "complexity": "hard",
+          "tags": ["aggregation", "financial", "statistics"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174023",
+        "natural_query": "What non-English movies became international hits?",
+        "sql_query": "SELECT title, original_language, original_title, revenue, vote_average FROM movies WHERE original_language != 'en' AND revenue > (SELECT AVG(revenue) FROM movies WHERE revenue > 0) AND vote_count > 1000 ORDER BY revenue DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "international_success",
+          "complexity": "hard",
+          "tags": ["language", "revenue", "subquery"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440024",
+        "natural_query": "Show me movies with amazing visual effects",
+        "sql_query": "SELECT title, budget, vote_average FROM movies WHERE (LOWER(keywords) LIKE '%visual effects%' OR LOWER(keywords) LIKE '%special effects%' OR LOWER(overview) LIKE '%visual effects%') AND budget > 100000000 AND vote_average > 7 ORDER BY vote_average DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "technical_aspect",
+          "complexity": "medium",
+          "tags": ["keywords", "budget", "technical"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987025",
+        "natural_query": "What movies were box office surprises with small budgets but big returns?",
+        "sql_query": "SELECT title, budget, revenue, ROUND(CAST(revenue AS FLOAT) / NULLIF(budget, 0), 2) as roi FROM movies WHERE budget > 0 AND budget < 20000000 AND revenue > (budget * 10) ORDER BY roi DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "financial_success",
+          "complexity": "medium",
+          "tags": ["budget", "revenue", "calculation"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174026",
+        "natural_query": "Find movies that took a long time to make but were worth the wait",
+        "sql_query": "SELECT title, runtime, budget, vote_average FROM movies WHERE runtime > 150 AND budget > 100000000 AND vote_average > 8 AND vote_count > 1000 ORDER BY vote_average DESC",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "production_value",
+          "complexity": "medium",
+          "tags": ["runtime", "budget", "rating"]
+        }
+      },
+      {
+        "id": "550e8400-e29b-41d4-a716-446655440027",
+        "natural_query": "What are some controversial movies that got people talking?",
+        "sql_query": "SELECT title, vote_average, vote_count, (ABS(vote_average - (SELECT AVG(vote_average) FROM movies WHERE vote_count > 1000))) as rating_deviation FROM movies WHERE vote_count > 10000 ORDER BY rating_deviation DESC LIMIT 15",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "rating_controversy",
+          "complexity": "hard",
+          "tags": ["rating", "statistics", "analysis"]
+        }
+      },
+      {
+        "id": "987fcdeb-51a2-43d7-9876-543210987028",
+        "natural_query": "Which holiday season had the best movies?",
+        "sql_query": "WITH HolidayMovies AS (SELECT EXTRACT(YEAR FROM release_date) as year, COUNT(*) as movie_count, AVG(vote_average) as avg_rating, SUM(revenue) as total_revenue FROM movies WHERE EXTRACT(MONTH FROM release_date) IN (11, 12) GROUP BY EXTRACT(YEAR FROM release_date)) SELECT year, movie_count, ROUND(avg_rating, 2) as average_rating, total_revenue FROM HolidayMovies WHERE year >= 2000 ORDER BY avg_rating DESC LIMIT 10",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "seasonal_analysis",
+          "complexity": "hard",
+          "tags": ["temporal", "aggregation", "seasonal"]
+        }
+      },
+      {
+        "id": "123e4567-e89b-12d3-a456-426614174029",
+        "natural_query": "Which movies have the most quotable lines?",
+        "sql_query": "SELECT title, popularity, vote_average FROM movies WHERE (LOWER(tagline) NOT LIKE '' AND LENGTH(tagline) > 30) AND vote_count > 1000 AND vote_average > 7.5 ORDER BY popularity DESC LIMIT 20",
+        "schema_context": "movies schema",
+        "metadata": {
+          "pattern": "memorable_content",
+          "complexity": "medium",
+          "tags": ["tagline", "popularity", "rating"]
+        }
+      }
+    ]
+  }
