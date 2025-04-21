@@ -1,5 +1,13 @@
-fastapi
-uvicorn
-google-generativeai
-pydantic
-python-dotenv
+# fastapi
+# uvicorn
+# google-generativeai
+# pydantic
+
+fastapi==0.109.0
+uvicorn==0.26.0
+pydantic==2.5.3
+google-generativeai==0.3.2
+openai==1.6.1
+anthropic==0.8.1
+mistralai==0.0.7
+python-dotenv==1.0.0

@@ -90,7 +90,7 @@
 //         Schema:   schema,
 //     }
 
-//     resp, err := b.makeRequest(ctx, "/analyze", req, b.sessionID)
+//     resp, err := b.MakeRequest(ctx, "/analyze", req, b.sessionID)
 //     if err != nil {
 //         logger.ErrorLogger.Printf("Analyze request failed: %v", err)
 //         return nil, fmt.Errorf("error making analyze request: %w", err)
@@ -122,7 +122,7 @@
 //         "schema":  schema,
 //     }
 
-//     resp, err := b.makeRequest(ctx, "/generate", requestData, b.sessionID)
+//     resp, err := b.MakeRequest(ctx, "/generate", requestData, b.sessionID)
 //     if err != nil {
 //         logger.ErrorLogger.Printf("Generate request failed: %v", err)
 //         return "", fmt.Errorf("error making generate request: %w", err)
@@ -145,7 +145,7 @@
 //         "schema": schema,
 //     }
 
-//     resp, err := b.makeRequest(ctx, "/validate", requestData, b.sessionID)
+//     resp, err := b.MakeRequest(ctx, "/validate", requestData, b.sessionID)
 //     if err != nil {
 //         logger.ErrorLogger.Printf("Validate request failed: %v", err)
 //         return nil, fmt.Errorf("error making validate request: %w", err)
@@ -160,7 +160,7 @@
 //     return validation, nil
 // }
 
-// // func (b *Bridge) makeRequest(ctx context.Context, endpoint string, payload interface{}, sessionID string) ([]byte, error) {
+// // func (b *Bridge) MakeRequest(ctx context.Context, endpoint string, payload interface{}, sessionID string) ([]byte, error) {
 // //     // Add session ID to payload
 // //     requestData := map[string]interface{}{
 // //         "session_id": sessionID,
@@ -202,7 +202,7 @@
 
 // //     return respBody.Bytes(), nil
 // // }
-// func (b *Bridge) makeRequest(ctx context.Context, endpoint string, requestData interface{}, sessionID string) ([]byte, error) {
+// func (b *Bridge) MakeRequest(ctx context.Context, endpoint string, requestData interface{}, sessionID string) ([]byte, error) {
 //     logger.InfoLogger.Printf("Making request to endpoint: %s", endpoint)
 //     logger.DebugLogger.Printf("Request payload: %s", requestData)
 
@@ -271,7 +271,7 @@
 //         Schema:          schema,
 //     }
 
-//     resp, err := b.makeRequest(ctx, "/heal", req, b.sessionID)
+//     resp, err := b.MakeRequest(ctx, "/heal", req, b.sessionID)
 //     if err != nil {
 //         return nil, fmt.Errorf("error making healing request: %w", err)
 //     }
@@ -302,6 +302,7 @@ type Bridge struct {
 	baseURL    string
 	httpClient *http.Client
 	sessionID  string
+	llmConfig  *LLMConfig
 }
 
 type AnalyzeResponse struct {
@@ -312,6 +313,14 @@ type AnalyzeResponse struct {
 type GenerateQueryResponse struct {
 	Query string `json:"query"`
 	Error string `json:"error,omitempty"`
+}
+
+func (b *Bridge) GetSessionID() string {
+    return b.sessionID
+}
+
+func (b *Bridge) SetLLMConfig(config *LLMConfig) {
+    b.llmConfig = config
 }
 
 func CreateBridge(baseURL string) *Bridge {
@@ -367,7 +376,7 @@ func (b *Bridge) Analyze(ctx context.Context, question string, schema map[string
 		"schema":   schema,
 	}
 
-	resp, err := b.makeRequest(ctx, "/analyze", req, b.sessionID)
+	resp, err := b.MakeRequest(ctx, "/analyze", req, b.sessionID)
 	if err != nil {
 		logger.ErrorLogger.Printf("Analyze request failed: %v", err)
 		return nil, fmt.Errorf("error making analyze request: %w", err)
@@ -394,7 +403,7 @@ func (b *Bridge) AnalyzeWithKnowledge(ctx context.Context, analysisRequest map[s
 	logger.InfoLogger.Printf("Bridge: Making analyze with knowledge request")
 	logger.DebugLogger.Printf("Analysis request: %+v", analysisRequest)
 
-	resp, err := b.makeRequest(ctx, "/analyze_with_knowledge", analysisRequest, b.sessionID)
+	resp, err := b.MakeRequest(ctx, "/analyze_with_knowledge", analysisRequest, b.sessionID)
 	if err != nil {
 		logger.ErrorLogger.Printf("Analyze with knowledge request failed: %v", err)
 		return nil, fmt.Errorf("error making analyze request: %w", err)
@@ -426,7 +435,7 @@ func (b *Bridge) GenerateQuery(ctx context.Context, analysis map[string]interfac
 		"schema":   schema,
 	}
 
-	resp, err := b.makeRequest(ctx, "/generate", requestData, b.sessionID)
+	resp, err := b.MakeRequest(ctx, "/generate", requestData, b.sessionID)
 	if err != nil {
 		logger.ErrorLogger.Printf("Generate request failed: %v", err)
 		return "", fmt.Errorf("error making generate request: %w", err)
@@ -453,7 +462,7 @@ func (b *Bridge) GenerateQueryWithKnowledge(ctx context.Context, request map[str
 		logger.InfoLogger.Printf("Knowledge context: %s", string(kcStr))
 	}
 
-	resp, err := b.makeRequest(ctx, "/generate_with_knowledge", request, b.sessionID)
+	resp, err := b.MakeRequest(ctx, "/generate_with_knowledge", request, b.sessionID)
 	if err != nil {
 		logger.ErrorLogger.Printf("Generate with knowledge request failed: %v", err)
 		return "", fmt.Errorf("error making generate request: %w", err)
@@ -474,8 +483,8 @@ func (b *Bridge) GenerateQueryWithKnowledge(ctx context.Context, request map[str
 	return genResponse.Query, nil
 }
 
-// makeRequest makes an HTTP request to the Python service
-func (b *Bridge) makeRequest(ctx context.Context, endpoint string, requestData interface{}, sessionID string) ([]byte, error) {
+// MakeRequest makes an HTTP request to the Python service
+func (b *Bridge) MakeRequest(ctx context.Context, endpoint string, requestData interface{}, sessionID string) ([]byte, error) {
 	logger.InfoLogger.Printf("Making request to endpoint: %s", endpoint)
 	logger.DebugLogger.Printf("Request payload: %v", requestData)
 
@@ -486,6 +495,11 @@ func (b *Bridge) makeRequest(ctx context.Context, endpoint string, requestData i
 		"session_id": sessionID,
 		"data":       requestData,
 	}
+
+	// Include LLM config if available
+    if b.llmConfig != nil {
+        wrappedRequest["llm_config"] = b.llmConfig
+    }
 
 	jsonData, err := json.Marshal(wrappedRequest)
 	if err != nil {
@@ -535,7 +549,7 @@ func (b *Bridge) ValidateQuery(ctx context.Context, query string, schema map[str
 		"schema": schema,
 	}
 
-	resp, err := b.makeRequest(ctx, "/validate", requestData, b.sessionID)
+	resp, err := b.MakeRequest(ctx, "/validate", requestData, b.sessionID)
 	if err != nil {
 		logger.ErrorLogger.Printf("Validate request failed: %v", err)
 		return nil, fmt.Errorf("error making validate request: %w", err)
@@ -564,7 +578,7 @@ func (b *Bridge) HealQuery(
 		Schema:           schema,
 	}
 
-	resp, err := b.makeRequest(ctx, "/heal", req, b.sessionID)
+	resp, err := b.MakeRequest(ctx, "/heal", req, b.sessionID)
 	if err != nil {
 		return nil, fmt.Errorf("error making healing request: %w", err)
 	}

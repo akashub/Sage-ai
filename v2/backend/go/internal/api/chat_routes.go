@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sage-ai-v2/internal/llm"
 	"sage-ai-v2/pkg/logger"
 	"sort"
 	"strings"
@@ -38,6 +39,7 @@ type Chat struct {
 	CreatedAt   time.Time     `json:"timestamp"`
 	LastUpdated time.Time     `json:"lastUpdated,omitempty"`
 	TrainingDataIDs  []string      `json:"trainingDataIds,omitempty"`
+	LLMConfig   *llm.LLMConfig `json:"llmConfig,omitempty"`
 }
 
 // ChatStore is a simple in-memory storage for chats
