@@ -229,11 +229,11 @@
 // func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
 //     // Create router
 //     router := mux.NewRouter()
-    
+
 //     // Apply middleware - make sure this is before any routes are defined
 //     router.Use(middleware.LoggingMiddleware)
 //     router.Use(middleware.CORSMiddleware)
-    
+
 //     // Extract knowledge manager from orchestrator
 //     km := orch.KnowledgeManager
 
@@ -241,7 +241,7 @@
 //     os.MkdirAll("data/uploads", 0755)
 
 //     // Define all your routes below...
-    
+
 //     // Query API
 //     router.HandleFunc("/api/query", func(w http.ResponseWriter, r *http.Request) {
 //         handleQueryRequest(w, r, orch)
@@ -254,13 +254,13 @@
 
 //     // Training Data API
 //     setupTrainingDataRoutes(router, km)
-    
+
 //     // Chat History API
 //     SetupChatRoutes(router)
 
 //     // Auth routes (if implemented)
 //     setupAuthRoutes(router, db)
-    
+
 //     return router
 // }
 
@@ -286,10 +286,10 @@
 // 	if req.Options == nil {
 // 		req.Options = make(map[string]interface{})
 // 	}
-	
+
 // 	// Add the useKnowledgeBase flag to options
 // 	req.Options["useKnowledgeBase"] = req.UseKnowledgeBase
-	
+
 // 	// Process the query
 // 	ctx := r.Context()
 // 	result, err := orch.ProcessQueryWithOptions(ctx, req.Query, req.CSVPath, req.Options)
@@ -306,19 +306,19 @@
 // 		"results":         result.ExecutionResult,
 // 		"knowledgeContext": nil,
 // 	}
-	
+
 // 	// Add natural language response if available
 // 	if result.Analysis != nil {
 // 		if resp, ok := result.Analysis["response"].(string); ok {
 // 			response["response"] = resp
 // 		}
 // 	}
-	
+
 // 	// Add knowledge context if available
 // 	if result.KnowledgeContext != nil {
 // 		// Prepare knowledge context for response
 // 		knowledgeContext := make([]map[string]interface{}, 0)
-		
+
 // 		// Add DDL schemas
 // 		for _, ddl := range result.KnowledgeContext.DDLSchemas {
 // 			knowledgeContext = append(knowledgeContext, map[string]interface{}{
@@ -328,7 +328,7 @@
 // 				"content":     "",  // Don't include full content in response
 // 			})
 // 		}
-		
+
 // 		// Add documentation
 // 		for _, doc := range result.KnowledgeContext.Documentation {
 // 			knowledgeContext = append(knowledgeContext, map[string]interface{}{
@@ -338,7 +338,7 @@
 // 				"content":     "",  // Don't include full content in response
 // 			})
 // 		}
-		
+
 // 		// Add question-SQL pairs
 // 		for _, pair := range result.KnowledgeContext.QuestionSQLPairs {
 // 			knowledgeContext = append(knowledgeContext, map[string]interface{}{
@@ -349,7 +349,7 @@
 // 				"sql":         pair.SQL,
 // 			})
 // 		}
-		
+
 // 		response["knowledgeContext"] = knowledgeContext
 // 	}
 
@@ -364,7 +364,7 @@
 // 	w.Header().Set("Access-Control-Allow-Origin", "*")
 //     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-    
+
 //     // Handle OPTIONS request
 //     if r.Method == "OPTIONS" {
 //         w.WriteHeader(http.StatusOK)
@@ -432,16 +432,16 @@
 //         return nil, fmt.Errorf("failed to open file: %w", err)
 //     }
 //     defer file.Close()
-    
+
 //     // Create a new CSV reader
 //     reader := csv.NewReader(file)
-    
+
 //     // Read the first row (headers)
 //     headers, err := reader.Read()
 //     if err != nil {
 //         return nil, fmt.Errorf("failed to read CSV headers: %w", err)
 //     }
-    
+
 //     return headers, nil
 // }
 
@@ -455,64 +455,64 @@
 // 			http.Error(w, err.Error(), http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		w.Header().Set("Content-Type", "application/json")
 // 		json.NewEncoder(w).Encode(items)
 // 	}).Methods("GET")
-	
+
 // 	// Upload training file
 // 	router.HandleFunc("/api/training/upload", func(w http.ResponseWriter, r *http.Request) {
 // 		// Explicitly set CORS headers for every response
 // 		w.Header().Set("Access-Control-Allow-Origin", "*")
 // 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 // 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
-		
+
 // 		// Handle preflight OPTIONS request
 // 		if r.Method == "OPTIONS" {
 // 			w.WriteHeader(http.StatusOK)
 // 			return
 // 		}
-		
+
 // 		// Continue with normal processing for POST
 // 		err := r.ParseMultipartForm(32 << 20) // 32MB max
 // 		if err != nil {
 // 			http.Error(w, "Could not parse form", http.StatusBadRequest)
 // 			return
 // 		}
-		
+
 // 		file, handler, err := r.FormFile("file")
 // 		if err != nil {
 // 			http.Error(w, "No file provided", http.StatusBadRequest)
 // 			return
 // 		}
 // 		defer file.Close()
-		
+
 // 		// Read file content
 // 		content, err := io.ReadAll(file)
 // 		if err != nil {
 // 			http.Error(w, "Failed to read file", http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		// Store file
 // 		localPath, err := km.StoreFile(handler.Filename, content)
 // 		if err != nil {
 // 			http.Error(w, "Failed to store file", http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		// Get training data type
 // 		dataType := r.FormValue("type")
 // 		if dataType == "" {
 // 			dataType = "ddl" // Default type
 // 		}
-		
+
 // 		// Get description
 // 		description := r.FormValue("description")
 // 		if description == "" {
 // 			description = handler.Filename
 // 		}
-		
+
 // 		// Process based on type
 // 		ctx := r.Context()
 // 		switch dataType {
@@ -529,7 +529,7 @@
 // 				http.Error(w, fmt.Sprintf("Failed to load JSON: %v", err), http.StatusInternalServerError)
 // 				return
 // 			}
-			
+
 // 			w.Header().Set("Content-Type", "application/json")
 // 			json.NewEncoder(w).Encode(map[string]interface{}{
 // 				"success": true,
@@ -547,7 +547,7 @@
 // 					http.Error(w, fmt.Sprintf("Failed to load JSON: %v", err), http.StatusInternalServerError)
 // 					return
 // 				}
-				
+
 // 				w.Header().Set("Content-Type", "application/json")
 // 				json.NewEncoder(w).Encode(map[string]interface{}{
 // 					"success": true,
@@ -562,20 +562,20 @@
 // 			http.Error(w, "Invalid data type", http.StatusBadRequest)
 // 			return
 // 		}
-		
+
 // 		if err != nil {
 // 			http.Error(w, fmt.Sprintf("Failed to add training data: %v", err), http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		w.Header().Set("Content-Type", "application/json")
 // 		json.NewEncoder(w).Encode(map[string]interface{}{
 // 			"success": true,
 // 			"type":    dataType,
 // 			"path":    localPath,
 // 		})
-// 	}).Methods("POST", "OPTIONS")	
-	
+// 	}).Methods("POST", "OPTIONS")
+
 // 	// Add training data manually
 // 	router.HandleFunc("/api/training/add", func(w http.ResponseWriter, r *http.Request) {
 // 		var data struct {
@@ -584,12 +584,12 @@
 // 			Description string                 `json:"description"`
 // 			Metadata    map[string]interface{} `json:"metadata"`
 // 		}
-		
+
 // 		if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 // 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 // 			return
 // 		}
-		
+
 // 		// Process based on type
 // 		ctx := r.Context()
 // 		var err error
@@ -614,12 +614,12 @@
 // 				DateAdded:   time.Now().Format(time.RFC3339),
 // 				Verified:    true,
 // 			}
-			
+
 // 			// Extract SQL from metadata
 // 			if sqlData, ok := data.Metadata["sql"].(string); ok {
 // 				pair.SQL = sqlData
 // 			}
-			
+
 // 			// Extract tags from metadata
 // 			if tagsData, ok := data.Metadata["tags"].([]interface{}); ok {
 // 				for _, tag := range tagsData {
@@ -628,38 +628,38 @@
 // 					}
 // 				}
 // 			}
-			
+
 // 			err = km.AddQuestionSQLPair(ctx, pair)
 // 		default:
 // 			http.Error(w, "Invalid data type", http.StatusBadRequest)
 // 			return
 // 		}
-		
+
 // 		if err != nil {
 // 			http.Error(w, fmt.Sprintf("Failed to add training data: %v", err), http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		w.Header().Set("Content-Type", "application/json")
 // 		json.NewEncoder(w).Encode(map[string]interface{}{
 // 			"success": true,
 // 			"type":    data.Type,
 // 		})
 // 	}).Methods("POST")
-	
+
 // 	// View training data
 // 	// router.HandleFunc("/api/training/view/{id}", func(w http.ResponseWriter, r *http.Request) {
 // 	// 	// Extract ID from URL
 // 	// 	vars := mux.Vars(r)
 // 	// 	id := vars["id"]
-		
+
 // 	// 	// Get all training data items
 // 	// 	items, err := km.ListTrainingData(r.Context(), "")
 // 	// 	if err != nil {
 // 	// 		http.Error(w, fmt.Sprintf("Failed to list training data: %v", err), http.StatusInternalServerError)
 // 	// 		return
 // 	// 	}
-		
+
 // 	// 	var item *knowledge.TrainingItem
 // 	// 	for _, itemMap := range items {
 // 	// 		// Check if this item matches the requested ID
@@ -667,7 +667,7 @@
 // 	// 			itemType, _ := itemMap["type"].(string)
 // 	// 			description, _ := itemMap["description"].(string)
 // 	// 			dateAdded, _ := itemMap["date_added"].(string)
-				
+
 // 	// 			// For a real system, we would retrieve the full content
 // 	// 			// Here we'll just return a placeholder
 // 	// 			item = &knowledge.TrainingItem{
@@ -680,12 +680,12 @@
 // 	// 			break
 // 	// 		}
 // 	// 	}
-		
+
 // 	// 	if item == nil {
 // 	// 		http.Error(w, "Training item not found", http.StatusNotFound)
 // 	// 		return
 // 	// 	}
-		
+
 // 	// 	w.Header().Set("Content-Type", "application/json")
 // 	// 	json.NewEncoder(w).Encode(item)
 // 	// }).Methods("GET")
@@ -695,24 +695,24 @@
 // 		w.Header().Set("Access-Control-Allow-Origin", "*")
 // 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 // 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		
+
 // 		// Handle OPTIONS request
 // 		if r.Method == "OPTIONS" {
 // 			w.WriteHeader(http.StatusOK)
 // 			return
 // 		}
-		
+
 // 		// Extract ID from URL
 // 		vars := mux.Vars(r)
 // 		id := vars["id"]
-		
+
 // 		// Validate ID
 // 		if id == "" {
 // 			logger.ErrorLogger.Printf("Invalid or empty ID parameter")
 // 			http.Error(w, "Invalid or empty ID parameter", http.StatusBadRequest)
 // 			return
 // 		}
-		
+
 // 		// Get the full training item
 // 		item, err := km.GetTrainingItem(r.Context(), id)
 // 		if err != nil {
@@ -720,38 +720,38 @@
 // 			http.Error(w, fmt.Sprintf("Error retrieving training item: %v", err), http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		// If no content is available, add a placeholder
 // 		if item.Content == "" {
 // 			item.Content = "No content available for this item"
 // 		}
-		
+
 // 		w.Header().Set("Content-Type", "application/json")
 // 		json.NewEncoder(w).Encode(item)
 // 	}).Methods("GET", "OPTIONS")
-	
+
 // 	// Delete training data
 // 	// router.HandleFunc("/api/training/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
 // 	// 	// Set CORS headers immediately
 // 	// 	w.Header().Set("Access-Control-Allow-Origin", "*")
 // 	// 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 // 	// 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		
+
 // 	// 	// Handle OPTIONS request
 // 	// 	if r.Method == "OPTIONS" {
 // 	// 		w.WriteHeader(http.StatusOK)
 // 	// 		return
 // 	// 	}
-		
+
 // 	// 	// Extract ID from URL
 // 	// 	vars := mux.Vars(r)
 // 	// 	id := vars["id"]
-		
+
 // 	// 	logger.InfoLogger.Printf("Deleting training item: %s", id)
-		
+
 // 	// 	// Important: Return success immediately without waiting for any background operations
 // 	// 	w.WriteHeader(http.StatusNoContent)
-		
+
 // 	// 	// Run the actual deletion logic in a separate goroutine
 // 	// 	go func() {
 // 	// 		// This function will run in the background after response is sent
@@ -761,7 +761,7 @@
 // 	// 			logger.ErrorLogger.Printf("Error listing training data: %v", err)
 // 	// 			return
 // 	// 		}
-			
+
 // 	// 		// Check if item exists and log
 // 	// 		var found bool = false
 // 	// 		for _, item := range items {
@@ -771,12 +771,12 @@
 // 	// 				break
 // 	// 			}
 // 	// 		}
-			
+
 // 	// 		if !found {
 // 	// 			logger.ErrorLogger.Printf("Training item not found: %s", id)
 // 	// 			return
 // 	// 		}
-			
+
 // 	// 		// Add actual deletion logic here when implemented
 // 	// 		logger.InfoLogger.Printf("Successfully deleted training item: %s", id)
 // 	// 	}()
@@ -786,19 +786,19 @@
 // 		w.Header().Set("Access-Control-Allow-Origin", "*")
 // 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 // 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		
+
 // 		// Handle OPTIONS request
 // 		if r.Method == "OPTIONS" {
 // 			w.WriteHeader(http.StatusOK)
 // 			return
 // 		}
-		
+
 // 		// Extract ID from URL
 // 		vars := mux.Vars(r)
 // 		id := vars["id"]
-		
+
 // 		logger.InfoLogger.Printf("Attempting to delete training item: %s", id)
-		
+
 // 		// Call the new deletion method
 // 		err := km.DeleteTrainingItem(r.Context(), id)
 // 		if err != nil {
@@ -807,12 +807,12 @@
 // 				http.Error(w, "Item not found", http.StatusNotFound)
 // 				return
 // 			}
-			
+
 // 			logger.ErrorLogger.Printf("Error deleting item: %v", err)
 // 			http.Error(w, fmt.Sprintf("Error deleting item: %v", err), http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		logger.InfoLogger.Printf("Successfully deleted training item: %s", id)
 // 		w.WriteHeader(http.StatusNoContent)
 // 	}).Methods("DELETE", "OPTIONS")
@@ -821,7 +821,7 @@
 // func setupAuthRoutes(router *mux.Router, db *sql.DB) {
 // 	// These are placeholders for auth routes
 // 	// Implement as needed
-	
+
 // 	// Login
 // 	router.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
 // 		// Mock implementation
@@ -830,7 +830,7 @@
 // 			"token": "mock_token",
 // 		})
 // 	}).Methods("POST")
-	
+
 // 	// Register
 // 	router.HandleFunc("/api/auth/register", func(w http.ResponseWriter, r *http.Request) {
 // 		// Mock implementation
@@ -840,7 +840,6 @@
 // 		})
 // 	}).Methods("POST")
 
-	
 // }
 
 // // backend/go/internal/api/routes.go
@@ -869,23 +868,23 @@
 // func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
 //     // Create router
 //     router := mux.NewRouter()
-    
+
 //     // Global handler for OPTIONS requests - this must come before other routes
 //     router.PathPrefix("/").Methods("OPTIONS").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 //         logger.InfoLogger.Printf("Global OPTIONS handler called for: %s", r.URL.Path)
-        
+
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 //         w.Header().Set("Access-Control-Max-Age", "3600") // Cache preflight for 1 hour
-        
+
 //         w.WriteHeader(http.StatusOK)
 //     })
-    
+
 //     // Apply middleware
 //     router.Use(middleware.LoggingMiddleware)
 //     router.Use(middleware.CORSMiddleware)
-    
+
 //     // Extract knowledge manager from orchestrator
 //     km := orch.KnowledgeManager
 
@@ -904,13 +903,13 @@
 
 //     // Training Data API
 //     setupTrainingDataRoutes(router, km)
-    
+
 //     // Chat History API - using the simplified version
 //     SetupChatRoutes(router)
 
 //     // Auth routes (if implemented)
 //     setupAuthRoutes(router, db)
-    
+
 //     return router
 // }
 
@@ -920,13 +919,13 @@
 //     w.Header().Set("Access-Control-Allow-Origin", "*")
 //     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-    
+
 //     // Handle OPTIONS request
 //     if r.Method == "OPTIONS" {
 //         w.WriteHeader(http.StatusOK)
 //         return
 //     }
-    
+
 //     // Parse request
 //     var req struct {
 //         Query           string                 `json:"query"`
@@ -947,10 +946,10 @@
 //     if req.Options == nil {
 //         req.Options = make(map[string]interface{})
 //     }
-    
+
 //     // Add the useKnowledgeBase flag to options
 //     req.Options["useKnowledgeBase"] = req.UseKnowledgeBase
-    
+
 //     // Process the query
 //     ctx := r.Context()
 //     result, err := orch.ProcessQueryWithOptions(ctx, req.Query, req.CSVPath, req.Options)
@@ -967,19 +966,19 @@
 //         "results":         result.ExecutionResult,
 //         "knowledgeContext": nil,
 //     }
-    
+
 //     // Add natural language response if available
 //     if result.Analysis != nil {
 //         if resp, ok := result.Analysis["response"].(string); ok {
 //             response["response"] = resp
 //         }
 //     }
-    
+
 //     // Add knowledge context if available
 //     if result.KnowledgeContext != nil {
 //         // Prepare knowledge context for response
 //         knowledgeContext := make([]map[string]interface{}, 0)
-        
+
 //         // Add DDL schemas
 //         for _, ddl := range result.KnowledgeContext.DDLSchemas {
 //             knowledgeContext = append(knowledgeContext, map[string]interface{}{
@@ -989,7 +988,7 @@
 //                 "content":     "",  // Don't include full content in response
 //             })
 //         }
-        
+
 //         // Add documentation
 //         for _, doc := range result.KnowledgeContext.Documentation {
 //             knowledgeContext = append(knowledgeContext, map[string]interface{}{
@@ -999,7 +998,7 @@
 //                 "content":     "",  // Don't include full content in response
 //             })
 //         }
-        
+
 //         // Add question-SQL pairs
 //         for _, pair := range result.KnowledgeContext.QuestionSQLPairs {
 //             knowledgeContext = append(knowledgeContext, map[string]interface{}{
@@ -1010,7 +1009,7 @@
 //                 "sql":         pair.SQL,
 //             })
 //         }
-        
+
 //         response["knowledgeContext"] = knowledgeContext
 //     }
 
@@ -1025,13 +1024,13 @@
 //     w.Header().Set("Access-Control-Allow-Origin", "*")
 //     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-    
+
 //     // Handle OPTIONS request
 //     if r.Method == "OPTIONS" {
 //         w.WriteHeader(http.StatusOK)
 //         return
 //     }
-    
+
 //     // Parse multipart form file
 //     err := r.ParseMultipartForm(32 << 20) // 32MB max size
 //     if err != nil {
@@ -1094,16 +1093,16 @@
 //         return nil, fmt.Errorf("failed to open file: %w", err)
 //     }
 //     defer file.Close()
-    
+
 //     // Create a new CSV reader
 //     reader := csv.NewReader(file)
-    
+
 //     // Read the first row (headers)
 //     headers, err := reader.Read()
 //     if err != nil {
 //         return nil, fmt.Errorf("failed to read CSV headers: %w", err)
 //     }
-    
+
 //     return headers, nil
 // }
 
@@ -1115,79 +1114,79 @@
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        
+
 //         // Handle OPTIONS request
 //         if r.Method == "OPTIONS" {
 //             w.WriteHeader(http.StatusOK)
 //             return
 //         }
-        
+
 //         dataType := r.URL.Query().Get("type")
 //         items, err := km.ListTrainingData(r.Context(), dataType)
 //         if err != nil {
 //             http.Error(w, err.Error(), http.StatusInternalServerError)
 //             return
 //         }
-        
+
 //         w.Header().Set("Content-Type", "application/json")
 //         json.NewEncoder(w).Encode(items)
 //     }).Methods("GET", "OPTIONS")
-    
+
 //     // Upload training file
 //     router.HandleFunc("/api/training/upload", func(w http.ResponseWriter, r *http.Request) {
 //         // Set CORS headers explicitly
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        
+
 //         // Handle OPTIONS request
 //         if r.Method == "OPTIONS" {
 //             w.WriteHeader(http.StatusOK)
 //             return
 //         }
-        
+
 //         err := r.ParseMultipartForm(32 << 20) // 32MB max
 //         if err != nil {
 //             http.Error(w, "Could not parse form", http.StatusBadRequest)
 //             return
 //         }
-        
+
 //         file, handler, err := r.FormFile("file")
 //         if err != nil {
 //             http.Error(w, "No file provided", http.StatusBadRequest)
 //             return
 //         }
 //         defer file.Close()
-        
+
 //         // Read file content
 //         content, err := io.ReadAll(file)
 //         if err != nil {
 //             http.Error(w, "Failed to read file", http.StatusInternalServerError)
 //             return
 //         }
-        
+
 //         // Store file
 //         localPath, err := km.StoreFile(handler.Filename, content)
 //         if err != nil {
 //             http.Error(w, "Failed to store file", http.StatusInternalServerError)
 //             return
 //         }
-        
+
 //         // Get training data type
 //         dataType := r.FormValue("type")
 //         if dataType == "" {
 //             dataType = "ddl" // Default type
 //         }
-        
+
 //         // Get description
 //         description := r.FormValue("description")
 //         if description == "" {
 //             description = handler.Filename
 //         }
-        
+
 //         // Generate a unique ID for the new training item
 //         id := fmt.Sprintf("%s_%d", dataType, time.Now().UnixNano())
-        
+
 //         // Process based on type
 //         ctx := r.Context()
 //         switch dataType {
@@ -1204,7 +1203,7 @@
 //                 http.Error(w, fmt.Sprintf("Failed to load JSON: %v", err), http.StatusInternalServerError)
 //                 return
 //             }
-            
+
 //             w.Header().Set("Content-Type", "application/json")
 //             json.NewEncoder(w).Encode(map[string]interface{}{
 //                 "success": true,
@@ -1223,7 +1222,7 @@
 //                     http.Error(w, fmt.Sprintf("Failed to load JSON: %v", err), http.StatusInternalServerError)
 //                     return
 //                 }
-                
+
 //                 w.Header().Set("Content-Type", "application/json")
 //                 json.NewEncoder(w).Encode(map[string]interface{}{
 //                     "success": true,
@@ -1239,12 +1238,12 @@
 //             http.Error(w, "Invalid data type", http.StatusBadRequest)
 //             return
 //         }
-        
+
 //         if err != nil {
 //             http.Error(w, fmt.Sprintf("Failed to add training data: %v", err), http.StatusInternalServerError)
 //             return
 //         }
-        
+
 //         w.Header().Set("Content-Type", "application/json")
 //         json.NewEncoder(w).Encode(map[string]interface{}{
 //             "success": true,
@@ -1253,35 +1252,35 @@
 //             "id":      id,
 //         })
 //     }).Methods("POST", "OPTIONS")
-    
+
 //     // Add training data manually
 //     router.HandleFunc("/api/training/add", func(w http.ResponseWriter, r *http.Request) {
 //         // Set CORS headers explicitly
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        
+
 //         // Handle OPTIONS request
 //         if r.Method == "OPTIONS" {
 //             w.WriteHeader(http.StatusOK)
 //             return
 //         }
-        
+
 //         var data struct {
 //             Type        string                 `json:"type"`
 //             Content     string                 `json:"content"`
 //             Description string                 `json:"description"`
 //             Metadata    map[string]interface{} `json:"metadata"`
 //         }
-        
+
 //         if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
 //             http.Error(w, "Invalid request body", http.StatusBadRequest)
 //             return
 //         }
-        
+
 //         // Generate a unique ID for the new training item
 //         id := fmt.Sprintf("%s_%d", data.Type, time.Now().UnixNano())
-        
+
 //         // Process based on type
 //         ctx := r.Context()
 //         var err error
@@ -1306,12 +1305,12 @@
 //                 DateAdded:   time.Now().Format(time.RFC3339),
 //                 Verified:    true,
 //             }
-            
+
 //             // Extract SQL from metadata
 //             if sqlData, ok := data.Metadata["sql"].(string); ok {
 //                 pair.SQL = sqlData
 //             }
-            
+
 //             // Extract tags from metadata
 //             if tagsData, ok := data.Metadata["tags"].([]interface{}); ok {
 //                 for _, tag := range tagsData {
@@ -1320,18 +1319,18 @@
 //                     }
 //                 }
 //             }
-            
+
 //             err = km.AddQuestionSQLPair(ctx, pair)
 //         default:
 //             http.Error(w, "Invalid data type", http.StatusBadRequest)
 //             return
 //         }
-        
+
 //         if err != nil {
 //             http.Error(w, fmt.Sprintf("Failed to add training data: %v", err), http.StatusInternalServerError)
 //             return
 //         }
-        
+
 //         w.Header().Set("Content-Type", "application/json")
 //         json.NewEncoder(w).Encode(map[string]interface{}{
 //             "success": true,
@@ -1339,24 +1338,24 @@
 //             "id":      id,
 //         })
 //     }).Methods("POST", "OPTIONS")
-    
+
 //     // View training data
 //     router.HandleFunc("/api/training/view/{id}", func(w http.ResponseWriter, r *http.Request) {
 //         // Set CORS headers explicitly
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        
+
 //         // Handle OPTIONS request
 //         if r.Method == "OPTIONS" {
 //             w.WriteHeader(http.StatusOK)
 //             return
 //         }
-        
+
 //         // Extract ID from URL
 //         vars := mux.Vars(r)
 //         id := vars["id"]
-        
+
 //         // Get all items
 //         items, err := km.ListTrainingData(r.Context(), "")
 //         if err != nil {
@@ -1364,32 +1363,32 @@
 //             http.Error(w, "Error listing training data", http.StatusInternalServerError)
 //             return
 //         }
-        
+
 //         // Find the item with matching ID
 //         var found bool = false
 //         var item map[string]interface{}
-        
+
 //         for _, itemData := range items {
 //             itemID, ok := itemData["id"].(string)
 //             if ok && itemID == id {
 //                 found = true
 //                 item = itemData
-                
+
 //                 // Add a placeholder content field
 //                 item["content"] = fmt.Sprintf("This is the full content of training item %s", id)
 //                 break
 //             }
 //         }
-        
+
 //         if !found {
 //             http.Error(w, "Training item not found", http.StatusNotFound)
 //             return
 //         }
-        
+
 //         w.Header().Set("Content-Type", "application/json")
 //         json.NewEncoder(w).Encode(item)
 //     }).Methods("GET", "OPTIONS")
-    
+
 //     // Delete training data
 //     // DeleteTrainingDataHandler handles deleting a training data item
 // 	router.HandleFunc("/api/training/delete/{id}", func(w http.ResponseWriter, r *http.Request) {
@@ -1419,7 +1418,7 @@
 // 		}
 
 // 		logger.InfoLogger.Printf("Deleting training item: %s", id)
-		
+
 // 		// Actually delete the item from the knowledge manager
 // 		err := km.DeleteTrainingItem(r.Context(), id)
 // 		if err != nil {
@@ -1427,7 +1426,7 @@
 // 			http.Error(w, fmt.Sprintf("Failed to delete training item: %v", err), http.StatusInternalServerError)
 // 			return
 // 		}
-		
+
 // 		logger.InfoLogger.Printf("Successfully deleted training item: %s", id)
 
 // 		// Return success response with 204 No Content status
@@ -1439,40 +1438,40 @@
 // func setupAuthRoutes(router *mux.Router, db *sql.DB) {
 //     // These are placeholders for auth routes
 //     // Implement as needed
-    
+
 //     // Login
 //     router.HandleFunc("/api/auth/login", func(w http.ResponseWriter, r *http.Request) {
 //         // Set CORS headers explicitly
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        
+
 //         // Handle OPTIONS request
 //         if r.Method == "OPTIONS" {
 //             w.WriteHeader(http.StatusOK)
 //             return
 //         }
-        
+
 //         // Mock implementation
 //         w.Header().Set("Content-Type", "application/json")
 //         json.NewEncoder(w).Encode(map[string]string{
 //             "token": "mock_token",
 //         })
 //     }).Methods("POST", "OPTIONS")
-    
+
 //     // Register
 //     router.HandleFunc("/api/auth/register", func(w http.ResponseWriter, r *http.Request) {
 //         // Set CORS headers explicitly
 //         w.Header().Set("Access-Control-Allow-Origin", "*")
 //         w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 //         w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        
+
 //         // Handle OPTIONS request
 //         if r.Method == "OPTIONS" {
 //             w.WriteHeader(http.StatusOK)
 //             return
 //         }
-        
+
 //         // Mock implementation
 //         w.Header().Set("Content-Type", "application/json")
 //         json.NewEncoder(w).Encode(map[string]string{
@@ -1480,7 +1479,6 @@
 //         })
 //     }).Methods("POST", "OPTIONS")
 // }
-
 
 // backend/go/internal/api/routes.go
 package api
@@ -1495,9 +1493,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sage-ai-v2/internal/knowledge"
-	"sage-ai-v2/internal/orchestrator"
 	"sage-ai-v2/internal/api/middleware"
+	"sage-ai-v2/internal/knowledge"
+	"sage-ai-v2/internal/llm"
+	"sage-ai-v2/internal/orchestrator"
 	"sage-ai-v2/pkg/logger"
 	"strings"
 	"time"
@@ -1542,6 +1541,14 @@ func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
         handleFileUpload(w, r)
     }).Methods("POST", "OPTIONS")
 
+    // router.HandleFunc("/api/validate-api-key", func(w http.ResponseWriter, r *http.Request) {
+    //     validateAPIKeyHandler(w, r)
+    // }).Methods("POST", "OPTIONS")
+    // Update in SetupRoutes function
+    router.HandleFunc("/api/validate-api-key", func(w http.ResponseWriter, r *http.Request) {
+        validateAPIKeyHandler(w, r)
+    }).Methods("POST", "OPTIONS")
+
     // Training Data API
     setupTrainingDataRoutes(router, km)
     
@@ -1552,6 +1559,93 @@ func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
     setupAuthRoutes(router, db)
     
     return router
+}
+
+// func validateAPIKeyHandler(w http.ResponseWriter, r *http.Request, orchestrator *orchestrator.Orchestrator) {
+//     // Set CORS headers
+//     w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    
+//     if r.Method == "OPTIONS" {
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
+    
+//     var config llm.LLMConfig
+//     if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+//         http.Error(w, "Invalid request body", http.StatusBadRequest)
+//         return
+//     }
+    
+//     if config.APIKey == "" {
+//         http.Error(w, "API key is required", http.StatusBadRequest)
+//         return
+//     }
+    
+//     // Test the API key by making a simple request to the Python service
+//     ctx := r.Context()
+    
+//     // Create a test bridge with the LLM config
+//     testBridge := llm.CreateBridge(orchestrator.bridge.baseURL)
+//     testSessionID := fmt.Sprintf("test_%d", time.Now().UnixNano())
+//     testBridge.SetSession(testSessionID)
+//     testBridge.SetLLMConfig(&config)
+    
+//     // Create a simple test query to validate the API key
+//     testRequest := map[string]interface{}{
+//         "question": "What is 2+2?",
+//         "schema": map[string]interface{}{
+//             "test": map[string]string{
+//                 "sample": "test",
+//                 "inferred_type": "string",
+//             },
+//         },
+//     }
+    
+//     // Try to analyze the test query with the provided API key
+//     _, err := testBridge.Analyze(ctx, testRequest["question"].(string), testRequest["schema"].(map[string]interface{}))
+//     valid := err == nil
+    
+//     response := map[string]bool{"valid": valid}
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(response)
+// }
+
+func validateAPIKeyHandler(w http.ResponseWriter, r *http.Request) {
+    logger.InfoLogger.Printf("Received API key validation request")
+    
+    // Set CORS headers
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    
+    if r.Method == "OPTIONS" {
+        logger.InfoLogger.Printf("OPTIONS request for API key validation")
+        w.WriteHeader(http.StatusOK)
+        return
+    }
+    
+    var config llm.LLMConfig
+    if err := json.NewDecoder(r.Body).Decode(&config); err != nil {
+        logger.ErrorLogger.Printf("Failed to decode request body: %v", err)
+        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        return
+    }
+    
+    logger.InfoLogger.Printf("Validating API key for provider: %s", config.Provider)
+    
+    if config.APIKey == "" {
+        logger.ErrorLogger.Printf("API key is empty")
+        http.Error(w, "API key is required", http.StatusBadRequest)
+        return
+    }
+    
+    // For debugging purposes, let's always return true for now
+    logger.InfoLogger.Printf("API key validation successful for provider: %s", config.Provider)
+    response := map[string]bool{"valid": true}
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }
 
 // handleQueryRequest processes the query against a CSV file

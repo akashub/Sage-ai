@@ -219,8 +219,96 @@
 #                 status_code=500,
 #                 detail=f"Analysis failed: {str(e)}"
 #             )
-        
+    
+#     async def analyze_with_knowledge(self, question: str, schema: Dict[str, Any], knowledge_context: Dict[str, Any]) -> Dict[str, Any]:
+#         """Analyze query with knowledge context"""
+#         try:
+#             logger.info("Starting query analysis with knowledge context")
+            
+#             # Format knowledge context elements
+#             ddl_schemas = knowledge_context.get("ddl_schemas", [])
+#             documentation = knowledge_context.get("documentation", [])
+#             examples = knowledge_context.get("examples", [])
+            
+#             # Analyze schema structure
+#             column_types = self.dataset_analyzer.identify_special_columns(schema)
+            
+#             # Construct a prompt that includes knowledge context
+#             prompt = f"""Analyze this question for the given dataset with additional context:
+
+# Question: {question}
+
+# Available Schema:
+# {json.dumps(schema, indent=2)}
+
+# Column Categories:
+# {json.dumps(column_types, indent=2)}
+
+# """
+            
+#             # Add DDL schemas if available
+#             if ddl_schemas:
+#                 prompt += f"""
+# Database DDL Schemas:
+# {json.dumps(ddl_schemas, indent=2)}
+# """
+            
+#             # Add documentation if available
+#             if documentation:
+#                 prompt += f"""
+# Business Documentation:
+# {json.dumps(documentation, indent=2)}
+# """
+            
+#             # Add example question-SQL pairs if available
+#             if examples:
+#                 prompt += f"""
+# Similar Question-SQL Examples:
+# {json.dumps(examples, indent=2)}
+# """
+            
+#             # Complete the prompt with output instructions
+#             prompt += """
+# Return ONLY a JSON object with this structure (no additional text or explanations):
+# {
+#     "query_type": "select",
+#     "required_columns": ["list", "of", "columns"],
+#     "conditions": ["list", "of", "conditions"],
+#     "sort": {"column": "name", "order": "desc"},
+#     "limit": number,
+#     "explanation": "brief explanation"
+# }
+
+# Use the knowledge context to better understand the database structure, terminology, and query patterns.
+# """
+
+#             logger.debug("Analysis with knowledge prompt created")
+#             response_text = await self._generate_content(prompt)
+#             logger.debug("Raw LLM response with knowledge: %s", response_text)
+            
+#             # Clean response
+#             cleaned_response = self._clean_response(response_text)
+#             logger.debug("Cleaned response with knowledge: %s", cleaned_response)
+            
+#             try:
+#                 analysis = json.loads(cleaned_response)
+#                 logger.info("Analysis with knowledge completed successfully")
+#                 return analysis
+#             except json.JSONDecodeError as e:
+#                 logger.error("Failed to parse analysis with knowledge response: %s", str(e))
+#                 raise HTTPException(
+#                     status_code=500,
+#                     detail=f"Invalid response format: {str(e)}"
+#                 )
+                
+#         except Exception as e:
+#             logger.error("Query analysis with knowledge failed: %s", str(e), exc_info=True)
+#             raise HTTPException(
+#                 status_code=500,
+#                 detail=f"Analysis with knowledge failed: {str(e)}"
+#             )
 #     async def generate_query(self, analysis: Dict[str, Any], schema: Dict[str, Any]) -> str:
+#         """Generate SQL query based on analysis"""
 #         try:
 #             logger.info("Starting query generation")
             
@@ -232,12 +320,28 @@
 #     Schema:
 #     {json.dumps(schema, indent=2)}
 
-#     Return ONLY the SQL query, no explanations or additional text."""
+#     Return ONLY the raw SQL query, no explanations, no additional text, and most importantly NO prefixes.
+#     Your response must begin directly with "SELECT" with no prefix.
+#     """
 
 #             response_text = await self._generate_content(prompt)
 #             cleaned_query = self._clean_response(response_text)
+            
+#             # Additional cleaning to ensure no "sql" prefix
+#             cleaned_query = cleaned_query.strip()
+#             for prefix in ["sql", "SQL"]:
+#                 if cleaned_query.startswith(prefix):
+#                     cleaned_query = cleaned_query[len(prefix):].strip()
+            
+#             # Ensure it's a SELECT statement
+#             if not cleaned_query.upper().startswith("SELECT"):
+#                 logger.warning(f"Generated query does not start with SELECT: {cleaned_query}")
+#                 # Force it to be a SELECT statement
+#                 cleaned_query = f"SELECT * FROM table LIMIT 5"
+#                 logger.info(f"Replaced with generic SELECT query: {cleaned_query}")
+            
 #             logger.info("Query generated successfully")
-#             return cleaned_query  # Return just the string
+#             return cleaned_query
                 
 #         except Exception as e:
 #             logger.error("Query generation failed: %s", str(e), exc_info=True)
@@ -245,7 +349,73 @@
 #                 status_code=500,
 #                 detail=f"Query generation failed: {str(e)}"
 #             )
+#     # In app/llm/client.py - modify the generate_query_with_knowledge function
 
+#     async def generate_query_with_knowledge(self, analysis: Dict[str, Any], schema: Dict[str, Any], 
+#                                     knowledge_context: Dict[str, Any]) -> str:
+#         """Generate SQL query with knowledge context"""
+#         try:
+#             logger.info("Starting query generation with knowledge context")
+            
+#             # Format knowledge context elements
+#             ddl_schemas = knowledge_context.get("ddl_schemas", [])
+#             examples = knowledge_context.get("examples", [])
+            
+#             prompt = f"""Generate a SQL query based on this analysis:
+
+#     Analysis:
+#     {json.dumps(analysis, indent=2)}
+
+#     Schema:
+#     {json.dumps(schema, indent=2)}
+
+#     """
+            
+#             # Add DDL schemas if available
+#             if ddl_schemas:
+#                 prompt += f"""
+#     Database DDL Schemas:
+#     {json.dumps(ddl_schemas, indent=2)}
+#     """
+            
+#             # Add example question-SQL pairs if available
+#             if examples:
+#                 prompt += f"""
+#     Similar SQL Examples:
+#     {json.dumps(examples, indent=2)}
+#     """
+            
+#             # Complete the prompt with explicit instructions to not use "sql" prefix
+#             prompt += """
+#     Return ONLY the raw SQL query, no explanations, no additional text, and most importantly NO prefixes.
+#     Your response must begin directly with "SELECT" with no prefix.
+#     """
+
+#             response_text = await self._generate_content(prompt)
+#             cleaned_query = self._clean_response(response_text)
+            
+#             # Additional cleaning to ensure no "sql" prefix
+#             cleaned_query = cleaned_query.strip()
+#             for prefix in ["sql", "SQL"]:
+#                 if cleaned_query.startswith(prefix):
+#                     cleaned_query = cleaned_query[len(prefix):].strip()
+            
+#             # Ensure it's a SELECT statement
+#             if not cleaned_query.upper().startswith("SELECT"):
+#                 logger.warning(f"Generated query does not start with SELECT: {cleaned_query}")
+#                 # Force it to be a SELECT statement
+#                 cleaned_query = f"SELECT * FROM table LIMIT 5"
+#                 logger.info(f"Replaced with generic SELECT query: {cleaned_query}")
+            
+#             logger.info("Query generated successfully with knowledge context")
+#             return cleaned_query
+                
+#         except Exception as e:
+#             logger.error("Query generation with knowledge failed: %s", str(e), exc_info=True)
+#             raise HTTPException(
+#                 status_code=500,
+#                 detail=f"Query generation failed: {str(e)}"
+#             )
 #     async def validate_query(self, query: str, schema: Dict[str, Any]) -> Dict[str, Any]:
 #         """Validate generated SQL query"""
 #         try:
@@ -452,6 +622,10 @@ import json
 import asyncio
 import time
 from fastapi import HTTPException
+import openai
+import anthropic
+from mistralai.client import MistralClient
+from mistralai.models.chat_completion import ChatMessage
 
 # Load environment variables
 load_dotenv()
@@ -511,36 +685,114 @@ class DatasetAnalyzer:
         return columns
 
 class LLMClient:
-    def __init__(self):
+    def __init__(self, api_key=None, provider="gemini", model_name = None):
+        self.provider = provider
+        self.api_key = api_key or self._get_default_api_key(provider)
+        self.model_name = model_name
+        
         try:
-            self._initialize_llm()
+            if self.provider == "gemini":
+                self._initialize_gemini()
+            elif self.provider == "openai":
+                self._initialize_openai()
+            elif self.provider == "anthropic":
+                self._initialize_anthropic()
+            elif self.provider == "mistral":
+                self._initialize_mistral()
+            else:
+                raise ValueError(f"Unsupported provider: {self.provider}")
+                
             self._initialize_rate_limiting()
             self._initialize_context_store()
             self.dataset_analyzer = DatasetAnalyzer()
             self.request_timeout = int(os.getenv("REQUEST_TIMEOUT", "90"))
-            logger.info("LLM Client initialized successfully")
+            logger.info("LLM Client initialized successfully for provider: %s", self.provider)
         except Exception as e:
             logger.error(f"Failed to initialize LLM Client: {str(e)}", exc_info=True)
             raise
 
-    def _initialize_llm(self):
-        """Initialize LLM configuration"""
-        api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY not found in environment variables")
+    def _get_default_api_key(self, provider):
+        """Get default API key from environment variables"""
+        if provider == "gemini":
+            return os.getenv("GEMINI_API_KEY")
+        elif provider == "openai":
+            return os.getenv("OPENAI_API_KEY")
+        elif provider == "anthropic":
+            return os.getenv("ANTHROPIC_API_KEY")
+        elif provider == "mistral":
+            return os.getenv("MISTRAL_API_KEY")
+        return None
+
+    def _initialize_gemini(self):
+        """Initialize Gemini LLM configuration"""
+        if not self.api_key:
+            raise ValueError("Gemini API key not provided")
             
         try:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel(os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash"))
+            genai.configure(api_key=self.api_key)
+            model_name = self.model_name or os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash")
+            self.model = genai.GenerativeModel(model_name)
             self.generation_config = {
                 'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
                 'top_p': float(os.getenv("LLM_TOP_P", "0.8")),
                 'top_k': int(os.getenv("LLM_TOP_K", "40")),
                 'max_output_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
             }
-            logger.info("LLM initialized successfully with model: %s", os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash"))
+            logger.info(f"Gemini initialized successfully with model: {model_name}")
         except Exception as e:
-            logger.error("Failed to initialize LLM: %s", str(e), exc_info=True)
+            logger.error("Failed to initialize Gemini: %s", str(e), exc_info=True)
+            raise
+
+    def _initialize_openai(self):
+        """Initialize OpenAI LLM configuration"""
+        if not self.api_key:
+            raise ValueError("OpenAI API key not provided")
+            
+        try:
+            openai.api_key = self.api_key
+            self.model_name = self.model_name or os.getenv("OPENAI_MODEL_NAME", "gpt-4")  # Use self.model_name
+            self.generation_config = {
+                'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
+                'max_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
+                'top_p': float(os.getenv("LLM_TOP_P", "0.8")),
+            }
+            logger.info(f"OpenAI initialized successfully with model: {self.model_name}")
+        except Exception as e:
+            logger.error("Failed to initialize OpenAI: %s", str(e), exc_info=True)
+            raise
+
+    def _initialize_anthropic(self):
+        """Initialize Anthropic Claude LLM configuration"""
+        if not self.api_key:
+            raise ValueError("Anthropic API key not provided")
+            
+        try:
+            self.client = anthropic.Anthropic(api_key=self.api_key)
+            self.model_name = self.model_name or os.getenv("ANTHROPIC_MODEL_NAME", "claude-3-opus-20240229")  # Use self.model_name
+            self.generation_config = {
+                'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
+                'max_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
+            }
+            logger.info(f"Anthropic Claude initialized successfully with model: {self.model_name}")
+        except Exception as e:
+            logger.error("Failed to initialize Anthropic: %s", str(e), exc_info=True)
+            raise
+
+    def _initialize_mistral(self):
+        """Initialize Mistral LLM configuration"""
+        if not self.api_key:
+            raise ValueError("Mistral API key not provided")
+            
+        try:
+            self.client = MistralClient(api_key=self.api_key)
+            self.model_name = self.model_name or os.getenv("MISTRAL_MODEL_NAME", "mistral-large-latest")  # Use self.model_name
+            self.generation_config = {
+                'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
+                'max_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
+            }
+            logger.info(f"Mistral initialized successfully with model: {self.model_name}")
+        except Exception as e:
+            logger.error("Failed to initialize Mistral: %s", str(e), exc_info=True)
             raise
 
     def _initialize_rate_limiting(self):
@@ -567,26 +819,29 @@ class LLMClient:
         self._last_call_time = time.time()
 
     async def _generate_content(self, prompt: str) -> str:
-        """Generate content with retries and error handling"""
+        """Generate content using the selected provider"""
         for attempt in range(self.max_retries):
             try:
                 await self._handle_rate_limit()
-                logger.debug("Generating content (attempt %d/%d)", attempt + 1, self.max_retries)
+                logger.debug("Generating content (attempt %d/%d) with provider: %s", 
+                           attempt + 1, self.max_retries, self.provider)
                 
-                response = await asyncio.wait_for(
-                    asyncio.to_thread(
-                        self.model.generate_content,
-                        prompt,
-                        generation_config=self.generation_config
-                    ),
-                    timeout=self.request_timeout
-                )
+                if self.provider == "gemini":
+                    response = await self._generate_gemini(prompt)
+                elif self.provider == "openai":
+                    response = await self._generate_openai(prompt)
+                elif self.provider == "anthropic":
+                    response = await self._generate_anthropic(prompt)
+                elif self.provider == "mistral":
+                    response = await self._generate_mistral(prompt)
+                else:
+                    raise ValueError(f"Unsupported provider: {self.provider}")
 
-                if not response.text:
+                if not response:
                     raise ValueError("Empty response from LLM")
                 
                 logger.debug("Content generated successfully")
-                return response.text
+                return response
                 
             except Exception as e:
                 logger.error("Content generation failed (attempt %d/%d): %s", 
@@ -594,6 +849,58 @@ class LLMClient:
                 if attempt == self.max_retries - 1:
                     raise
                 await asyncio.sleep(1)
+
+    async def _generate_gemini(self, prompt: str) -> str:
+        """Generate content using Gemini"""
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                self.model.generate_content,
+                prompt,
+                generation_config=self.generation_config
+            ),
+            timeout=self.request_timeout
+        )
+        return response.text
+
+    async def _generate_openai(self, prompt: str) -> str:
+        """Generate content using OpenAI"""
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                openai.ChatCompletion.create,
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                **self.generation_config
+            ),
+            timeout=self.request_timeout
+        )
+        return response.choices[0].message.content
+
+    async def _generate_anthropic(self, prompt: str) -> str:
+        """Generate content using Anthropic Claude"""
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                self.client.messages.create,
+                model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
+                **self.generation_config
+            ),
+            timeout=self.request_timeout
+        )
+        return response.content[0].text
+
+    async def _generate_mistral(self, prompt: str) -> str:
+        """Generate content using Mistral"""
+        messages = [ChatMessage(role="user", content=prompt)]
+        response = await asyncio.wait_for(
+            asyncio.to_thread(
+                self.client.chat,
+                model=self.model_name,
+                messages=messages,
+                **self.generation_config
+            ),
+            timeout=self.request_timeout
+        )
+        return response.choices[0].message.content
 
     def _clean_response(self, response: str) -> str:
         """Clean LLM response text"""
@@ -751,6 +1058,7 @@ Use the knowledge context to better understand the database structure, terminolo
                 status_code=500,
                 detail=f"Analysis with knowledge failed: {str(e)}"
             )
+
     async def generate_query(self, analysis: Dict[str, Any], schema: Dict[str, Any]) -> str:
         """Generate SQL query based on analysis"""
         try:
@@ -793,7 +1101,6 @@ Use the knowledge context to better understand the database structure, terminolo
                 status_code=500,
                 detail=f"Query generation failed: {str(e)}"
             )
-    # In app/llm/client.py - modify the generate_query_with_knowledge function
 
     async def generate_query_with_knowledge(self, analysis: Dict[str, Any], schema: Dict[str, Any], 
                                     knowledge_context: Dict[str, Any]) -> str:
@@ -860,6 +1167,7 @@ Use the knowledge context to better understand the database structure, terminolo
                 status_code=500,
                 detail=f"Query generation failed: {str(e)}"
             )
+
     async def validate_query(self, query: str, schema: Dict[str, Any]) -> Dict[str, Any]:
         """Validate generated SQL query"""
         try:
@@ -1054,4 +1362,17 @@ try:
     logger.info("LLM client singleton created successfully")
 except Exception as e:
     logger.error("Failed to create LLM client singleton: %s", str(e), exc_info=True)
-    raise
+    # Create a fallback client that can be replaced later
+    llm_client = None
+
+def get_default_client():
+    global llm_client
+    if llm_client is None:
+        try:
+            # Try to create without API key - it can be added later
+            llm_client = LLMClient(api_key=None, provider="gemini", model_name=None)
+            logger.info("LLM client singleton created successfully")
+        except Exception as e:
+            logger.warning(f"Failed to create default LLM client: {e}")
+            llm_client = None
+    return llm_client
