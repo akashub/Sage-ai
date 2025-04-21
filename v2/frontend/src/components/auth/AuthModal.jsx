@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Dialog, Box, IconButton, useTheme, Typography } from "@mui/material"
+import { Dialog, Box, IconButton, useTheme, Typography, Button } from "@mui/material"
 import CloseIcon from "@mui/icons-material/Close"
 import { useAuth } from "./AuthContext"
 import SignInForm from "./SignInForm"
@@ -10,7 +10,7 @@ import ForgotPasswordForm from "./ForgotPasswordForm"
 import OAuthButtons from "./OAuthButtons"
 import { motion, AnimatePresence } from "framer-motion"
 
-const ROTATING_TEXTS = ["Assistant", "Companion", "Generator"]
+const ROTATING_TEXTS = ["Assistant", "Companion", "Generator", "Expert", "Partner"]
 
 const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
   const theme = useTheme()
@@ -84,7 +84,7 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
             </Box>
 
             <Typography variant="h4" sx={{ mb: 1, fontWeight: 600, textAlign: "center" }}>
-              {currentMode === "signin" ? "Sign in" : "Create account"}
+              {currentMode === "signin" ? "Welcome Back" : "Create Account"}
             </Typography>
 
             <OAuthButtons />
@@ -127,15 +127,20 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
                 mb: 3,
                 color: "white",
                 textAlign: "center",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 1
               }}
             >
-              Your AI-Powered SQL{" "}
+              <span>Your AI-Powered SQL</span>
               <Box
                 sx={{
-                  display: "inline-block",
                   position: "relative",
-                  minWidth: "200px",
                   height: "60px",
+                  width: "100%",
+                  maxWidth: "400px",
+                  overflow: "hidden"
                 }}
               >
                 <AnimatePresence mode="wait">
@@ -150,6 +155,13 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
                       left: 0,
                       right: 0,
                       textAlign: "center",
+                      background: "linear-gradient(135deg, #5865F2 0%, #EB459E 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      display: "block",
+                      fontWeight: 800,
+                      fontSize: "0.9em"
                     }}
                   >
                     {ROTATING_TEXTS[textIndex]}
@@ -178,4 +190,3 @@ const AuthModal = ({ open, onClose, initialMode = "signin" }) => {
 }
 
 export default AuthModal
-

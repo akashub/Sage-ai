@@ -21,7 +21,6 @@ const SignUpForm = ({ onSignInClick }) => {
     
     try {
       await signUp(formData.email, formData.password, formData.name)
-      // Redirect happens automatically in the AuthContext
     } catch (err) {
       console.error("Sign up failed:", err)
     } finally {
@@ -41,7 +40,7 @@ const SignUpForm = ({ onSignInClick }) => {
     try {
       const redirectUri = `${window.location.origin}/oauth-callback`
       const authUrl = await getOAuthUrl(provider, redirectUri)
-      window.location.href = authUrl // Redirect to OAuth provider
+      window.location.href = authUrl
     } catch (err) {
       console.error(`OAuth sign in with ${provider} failed:`, err)
     }
@@ -133,43 +132,19 @@ const SignUpForm = ({ onSignInClick }) => {
         {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Create Account"}
       </Button>
       
-      <Typography variant="body2" align="center" sx={{ mb: 2 }}>
-        Or sign up with
-      </Typography>
-      
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-        <Button
-          variant="outlined"
-          startIcon={<GoogleIcon />}
-          onClick={() => handleOAuthSignIn("google")}
-          disabled={isSubmitting}
-          sx={{ width: "48%" }}
-        >
-          Google
-        </Button>
-        
-        <Button
-          variant="outlined"
-          startIcon={<GitHubIcon />}
-          onClick={() => handleOAuthSignIn("github")}
-          disabled={isSubmitting}
-          sx={{ width: "48%" }}
-        >
-          GitHub
-        </Button>
-      </Box>
-      
       <Box sx={{ textAlign: "center" }}>
-        Already have an account?{" "}
-        <Link 
-          component="button" 
-          type="button" 
-          onClick={onSignInClick} 
-          disabled={isSubmitting}
-          sx={{ color: "rgba(255, 255, 255, 1.0)" }}
-        >
-          Sign in
-        </Link>
+        <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.7)" }}>
+          Already have an account?{" "}
+          <Link 
+            component="button" 
+            type="button" 
+            onClick={onSignInClick} 
+            disabled={isSubmitting}
+            sx={{ color: "rgba(255, 255, 255, 1.0)" }}
+          >
+            Sign in
+          </Link>
+        </Typography>
       </Box>
     </Box>
   )
