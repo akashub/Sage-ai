@@ -2,28 +2,25 @@
 
 import React from 'react';
 import {
+  Box,
   Container,
   Typography,
-  Box,
-  Grid,
   Paper,
+  Grid,
   List,
   ListItem,
   ListItemText,
+  ListItemIcon,
   Divider,
-  Link,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  useTheme
+  useTheme,
 } from '@mui/material';
 import {
-  ExpandMore as ExpandMoreIcon,
+  School as SchoolIcon,
   Code as CodeIcon,
   Storage as StorageIcon,
   Security as SecurityIcon,
-  Speed as SpeedIcon,
-  Help as HelpIcon
+  Api as ApiIcon,
+  ContactSupport as ContactSupportIcon,
 } from '@mui/icons-material';
 import Navigation from '../components/layout/Navigation';
 
@@ -33,73 +30,28 @@ const Docs = () => {
   const sections = [
     {
       title: 'Getting Started',
-      icon: <HelpIcon />,
-      content: [
-        {
-          title: 'Introduction',
-          content: 'Sage AI is an advanced SQL query generation and data analysis platform. This documentation will help you get started with using our platform effectively.'
-        },
-        {
-          title: 'Quick Start',
-          content: 'To begin using Sage AI, simply sign up for an account and connect your database. You can start by asking questions in natural language, and our AI will generate the appropriate SQL queries.'
-        }
-      ]
+      icon: <SchoolIcon />,
+      content: 'Learn how to upload your CSV files and start analyzing your data with natural language queries.'
     },
     {
       title: 'Features',
-      icon: <SpeedIcon />,
-      content: [
-        {
-          title: 'Natural Language Processing',
-          content: 'Convert your questions into SQL queries using natural language. No SQL knowledge required!'
-        },
-        {
-          title: 'Query Optimization',
-          content: 'Our AI automatically optimizes your queries for better performance and efficiency.'
-        }
-      ]
+      icon: <CodeIcon />,
+      content: 'Explore our powerful features including natural language processing, SQL generation, and data visualization.'
     },
     {
       title: 'Database Integration',
       icon: <StorageIcon />,
-      content: [
-        {
-          title: 'Supported Databases',
-          content: 'Sage AI supports major databases including PostgreSQL, MySQL, MongoDB, and more.'
-        },
-        {
-          title: 'Connection Setup',
-          content: 'Learn how to securely connect your database to Sage AI.'
-        }
-      ]
+      content: 'Understand how Sage AI integrates with your data and processes complex queries.'
     },
     {
       title: 'Security',
       icon: <SecurityIcon />,
-      content: [
-        {
-          title: 'Data Protection',
-          content: 'Your data is encrypted in transit and at rest. We never store your database credentials.'
-        },
-        {
-          title: 'Access Control',
-          content: 'Manage user permissions and access levels for your team.'
-        }
-      ]
+      content: 'Learn about our security measures and how we protect your data.'
     },
     {
       title: 'API Reference',
-      icon: <CodeIcon />,
-      content: [
-        {
-          title: 'Authentication',
-          content: 'Learn how to authenticate with our API using OAuth 2.0.'
-        },
-        {
-          title: 'Endpoints',
-          content: 'Comprehensive documentation of all available API endpoints.'
-        }
-      ]
+      icon: <ApiIcon />,
+      content: 'Detailed documentation of our API endpoints and integration options.'
     }
   ];
 
@@ -107,82 +59,103 @@ const Docs = () => {
     <>
       <Navigation />
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Box sx={{ mb: 4 }}>
+        {/* Header */}
+        <Box sx={{ mb: 6, textAlign: 'center' }}>
           <Typography variant="h3" gutterBottom>
             Documentation
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary" paragraph>
+          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
             Everything you need to know about using Sage AI
           </Typography>
         </Box>
 
+        {/* Main Content */}
         <Grid container spacing={4}>
-          {/* Main Content */}
-          <Grid item xs={12} md={8}>
-            {sections.map((section, index) => (
-              <Paper
-                key={index}
-                elevation={2}
-                sx={{ mb: 4, overflow: 'hidden' }}
-              >
-                <Box sx={{ p: 3, bgcolor: 'primary.main', color: 'white' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    {section.icon}
-                    <Typography variant="h5" sx={{ ml: 1 }}>
-                      {section.title}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{ p: 3 }}>
-                  {section.content.map((item, itemIndex) => (
-                    <Box key={itemIndex} sx={{ mb: 3 }}>
-                      <Typography variant="h6" gutterBottom>
-                        {item.title}
-                      </Typography>
-                      <Typography variant="body1" color="text.secondary">
-                        {item.content}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Paper>
-            ))}
-          </Grid>
-
           {/* Sidebar */}
-          <Grid item xs={12} md={4}>
-            <Paper elevation={2} sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>
+          <Grid item xs={12} md={3}>
+            <Paper elevation={2} sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2 }}>
                 Quick Links
               </Typography>
               <List>
-                {sections.map((section, index) => (
-                  <React.Fragment key={index}>
-                    <ListItem>
-                      <ListItemText
-                        primary={section.title}
-                        primaryTypographyProps={{ variant: 'subtitle2' }}
-                      />
-                    </ListItem>
-                    {index < sections.length - 1 && <Divider />}
-                  </React.Fragment>
+                {sections.map((section) => (
+                  <ListItem 
+                    key={section.title} 
+                    button
+                    sx={{
+                      borderRadius: 1,
+                      mb: 1,
+                      '&:hover': {
+                        bgcolor: 'action.hover',
+                      }
+                    }}
+                  >
+                    <ListItemIcon sx={{ minWidth: 40 }}>
+                      {section.icon}
+                    </ListItemIcon>
+                    <ListItemText primary={section.title} />
+                  </ListItem>
                 ))}
               </List>
             </Paper>
+          </Grid>
 
-            <Paper elevation={2} sx={{ p: 3, mt: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Need Help?
-              </Typography>
-              <Typography variant="body2" color="text.secondary" paragraph>
-                If you need additional assistance, please contact our support team.
-              </Typography>
-              <Link href="/contact" color="primary">
-                Contact Support
-              </Link>
-            </Paper>
+          {/* Content */}
+          <Grid item xs={12} md={9}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {sections.map((section, index) => (
+                <Paper 
+                  key={section.title}
+                  elevation={2}
+                  sx={{ p: 4 }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <Box sx={{ 
+                      mr: 2,
+                      p: 1,
+                      borderRadius: 1,
+                      bgcolor: 'primary.main',
+                      color: 'white',
+                      display: 'flex'
+                    }}>
+                      {section.icon}
+                    </Box>
+                    <Typography variant="h5">
+                      {section.title}
+                    </Typography>
+                  </Box>
+                  <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                    {section.content}
+                  </Typography>
+                  <Divider sx={{ my: 2 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    This section provides detailed information about {section.title.toLowerCase()}. 
+                    Check our documentation for more details.
+                  </Typography>
+                </Paper>
+              ))}
+            </Box>
           </Grid>
         </Grid>
+
+        {/* Support Section */}
+        <Paper 
+          elevation={2} 
+          sx={{ 
+            mt: 6, 
+            p: 4, 
+            textAlign: 'center'
+          }}
+        >
+          <ContactSupportIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+          <Typography variant="h5" gutterBottom>
+            Need Help?
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            Our support team is here to help you with any questions or issues.
+            Contact us at support@sageai.com
+          </Typography>
+        </Paper>
       </Container>
     </>
   );

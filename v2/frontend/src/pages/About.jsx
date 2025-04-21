@@ -2,9 +2,9 @@
 
 import React from 'react';
 import {
+  Box,
   Container,
   Typography,
-  Box,
   Grid,
   Paper,
   Avatar,
@@ -46,22 +46,22 @@ const About = () => {
     {
       name: 'Akash Singh',
       role: 'Backend Developer',
-      // image: 'https://i.pravatar.cc/150?img=1'
+      image: 'https://i.pravatar.cc/150?img=1'
     },
     {
       name: 'Nitin Reddy',
       role: 'Backend Developer',
-      // image: 'https://i.pravatar.cc/150?img=2'
+      image: 'https://i.pravatar.cc/150?img=2'
     },
     {
       name: 'Sudiksha Rajavaram',
       role: 'Frontend Developer',
-      // image: 'https://i.pravatar.cc/150?img=3'
+      image: 'https://i.pravatar.cc/150?img=3'
     },
     {
       name: 'Yash Kishore',
       role: 'Frontend Developer',
-      // image: 'https://i.pravatar.cc/150?img=4'
+      image: 'https://i.pravatar.cc/150?img=4'
     }
   ];
 
@@ -169,7 +169,7 @@ const About = () => {
             color="secondary" 
             size="large"
             sx={{ 
-              px: 4,
+              px: 4, 
               py: 1.5,
               fontSize: '1.1rem'
             }}
