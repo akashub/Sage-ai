@@ -310,6 +310,7 @@
 # backend/python/app/main.py
 import asyncio
 import logging
+import os
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 from typing import Dict, Any, List, Optional
@@ -348,13 +349,27 @@ class SessionRequest(BaseModel):
     data: Dict[str, Any]
     llm_config: Optional[Dict[str, str]] = None
 
-def create_llm_client(provider: str, api_key: str) -> LLMClient:
+# Store session-specific clients
+session_clients = {}
+
+def create_llm_client(provider: str, api_key: str, model_name: Optional[str] = None) -> LLMClient:
     """Create an LLM client for the specified provider"""
     try:
+        # Set model-specific environment variable temporarily
+        if provider == "gemini" and model_name:
+            os.environ["GEMINI_MODEL_NAME"] = model_name
+        elif provider == "openai" and model_name:
+            os.environ["OPENAI_MODEL_NAME"] = model_name
+        elif provider == "anthropic" and model_name:
+            os.environ["ANTHROPIC_MODEL_NAME"] = model_name
+        elif provider == "mistral" and model_name:
+            os.environ["MISTRAL_MODEL_NAME"] = model_name
+            
         return LLMClient(api_key=api_key, provider=provider)
     except Exception as e:
         logger.error(f"Failed to create LLM client for provider {provider}: {str(e)}")
         raise HTTPException(status_code=400, detail=f"Invalid API key or configuration for {provider}")
+
 
 @app.middleware("http")
 async def timeout_middleware(request: Request, call_next):
@@ -373,7 +388,12 @@ async def analyze_query(request: SessionRequest):
         if request.llm_config and request.session_id not in session_clients:
             provider = request.llm_config.get("provider", "gemini")
             api_key = request.llm_config.get("api_key")
-            session_clients[request.session_id] = create_llm_client(provider, api_key)
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(request.session_id, None)
         if client is None:
@@ -407,7 +427,12 @@ async def analyze_with_knowledge(request: SessionRequest):
         if request.llm_config and request.session_id not in session_clients:
             provider = request.llm_config.get("provider", "gemini")
             api_key = request.llm_config.get("api_key")
-            session_clients[request.session_id] = create_llm_client(provider, api_key)
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(request.session_id, None)
         if client is None:
@@ -441,7 +466,12 @@ async def generate_query(request: SessionRequest):
         if request.llm_config and request.session_id not in session_clients:
             provider = request.llm_config.get("provider", "gemini")
             api_key = request.llm_config.get("api_key")
-            session_clients[request.session_id] = create_llm_client(provider, api_key)
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(request.session_id, None)
         if client is None:
@@ -471,7 +501,12 @@ async def generate_with_knowledge(request: SessionRequest):
         if request.llm_config and request.session_id not in session_clients:
             provider = request.llm_config.get("provider", "gemini")
             api_key = request.llm_config.get("api_key")
-            session_clients[request.session_id] = create_llm_client(provider, api_key)
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(request.session_id, None)
         if client is None:
@@ -503,7 +538,12 @@ async def validate_query(request: SessionRequest):
         if request.llm_config and request.session_id not in session_clients:
             provider = request.llm_config.get("provider", "gemini")
             api_key = request.llm_config.get("api_key")
-            session_clients[request.session_id] = create_llm_client(provider, api_key)
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(request.session_id, None)
         if client is None:
@@ -532,7 +572,12 @@ async def heal_query(request: SessionRequest):
         if request.llm_config and request.session_id not in session_clients:
             provider = request.llm_config.get("provider", "gemini")
             api_key = request.llm_config.get("api_key")
-            session_clients[request.session_id] = create_llm_client(provider, api_key)
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(request.session_id, None)
         if client is None:
@@ -566,10 +611,15 @@ async def process_query(request: Dict[str, Any]):
         llm_config = request.get("llm_config")
         
         # Get or create client for this session
-        if llm_config and session_id not in session_clients:
-            provider = llm_config.get("provider", "gemini")
-            api_key = llm_config.get("api_key")
-            session_clients[session_id] = create_llm_client(provider, api_key)
+        if request.llm_config and request.session_id not in session_clients:
+            provider = request.llm_config.get("provider", "gemini")
+            api_key = request.llm_config.get("api_key")
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(session_id, None)
         if client is None:
@@ -637,10 +687,15 @@ async def process_with_knowledge(request: Dict[str, Any]):
         llm_config = request.get("llm_config")
         
         # Get or create client for this session
-        if llm_config and session_id not in session_clients:
-            provider = llm_config.get("provider", "gemini")
-            api_key = llm_config.get("api_key")
-            session_clients[session_id] = create_llm_client(provider, api_key)
+        if request.llm_config and request.session_id not in session_clients:
+            provider = request.llm_config.get("provider", "gemini")
+            api_key = request.llm_config.get("api_key")
+            model_name = request.llm_config.get("model")
+            
+            if not api_key:
+                raise HTTPException(status_code=400, detail="API key is required")
+                
+            session_clients[request.session_id] = create_llm_client(provider, api_key, model_name)
         
         client = session_clients.get(session_id, None)
         if client is None:
@@ -708,6 +763,15 @@ async def shutdown_event():
     logger.info("Cleaning up LLM clients...")
     # Clean up any resources if needed
     session_clients.clear()
+# backend/python/app/main.py
+
+def create_llm_client(provider: str, api_key: str, model_name: Optional[str] = None) -> LLMClient:
+    """Create an LLM client for the specified provider"""
+    try:
+        return LLMClient(api_key=api_key, provider=provider, model_name=model_name)
+    except Exception as e:
+        logger.error(f"Failed to create LLM client for provider {provider}: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Invalid API key or configuration for {provider}")
 
 @app.get("/health")
 async def health_check():

@@ -447,22 +447,55 @@ export const uploadFile = async (file) => {
   }
 };
 
+// export const queryData = async (query, csvPath, options = {}) => {
+//   console.log("Sending query:", query, csvPath, options);
+  
+//   const response = await fetch(`${API_BASE_URL}/api/query`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({
+//       query,
+//       csvPath,
+//       useKnowledgeBase: options.useKnowledgeBase !== false, // Default to true
+//       timestamp: options.timestamp || Date.now(), // Prevent caching
+//       options: options.additionalOptions || {},
+//     }),
+//     // Disable caching
+//     cache: "no-store"
+//   });
+
+//   return handleApiError(response);
+// };
 export const queryData = async (query, csvPath, options = {}) => {
   console.log("Sending query:", query, csvPath, options);
+  
+  const requestBody = {
+    query,
+    csvPath,
+    useKnowledgeBase: options.useKnowledgeBase !== false,
+    timestamp: options.timestamp || Date.now(),
+    options: options.additionalOptions || {},
+  };
+  
+  // Only add llmConfig if it's provided in options
+  if (options.llmConfig) {
+    requestBody.llmConfig = {
+      provider: options.llmConfig.provider,
+      api_key: options.llmConfig.api_key,
+      model: options.llmConfig.model  // Make sure model is included
+    };
+  }
+  
+  console.log("Request body:", requestBody);
   
   const response = await fetch(`${API_BASE_URL}/api/query`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      query,
-      csvPath,
-      useKnowledgeBase: options.useKnowledgeBase !== false, // Default to true
-      timestamp: options.timestamp || Date.now(), // Prevent caching
-      options: options.additionalOptions || {},
-    }),
-    // Disable caching
+    body: JSON.stringify(requestBody),
     cache: "no-store"
   });
 
@@ -912,5 +945,20 @@ export const handleOAuthCallback = async (provider, code) => {
     body: JSON.stringify({ code }),
   });
 
+  return handleApiError(response);
+};
+
+export const validateApiKey = async (provider, apiKey) => {
+  const response = await fetch(`${API_BASE_URL}/api/validate-api-key`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      provider: provider,
+      api_key: apiKey
+    }),
+  });
+  
   return handleApiError(response);
 };

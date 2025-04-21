@@ -685,9 +685,10 @@ class DatasetAnalyzer:
         return columns
 
 class LLMClient:
-    def __init__(self, api_key=None, provider="gemini"):
+    def __init__(self, api_key=None, provider="gemini", model_name = None):
         self.provider = provider
         self.api_key = api_key or self._get_default_api_key(provider)
+        self.model_name = model_name
         
         try:
             if self.provider == "gemini":
@@ -729,14 +730,15 @@ class LLMClient:
             
         try:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel(os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash"))
+            model_name = self.model_name or os.getenv("GEMINI_MODEL_NAME", "gemini-1.5-flash")
+            self.model = genai.GenerativeModel(model_name)
             self.generation_config = {
                 'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
                 'top_p': float(os.getenv("LLM_TOP_P", "0.8")),
                 'top_k': int(os.getenv("LLM_TOP_K", "40")),
                 'max_output_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
             }
-            logger.info("Gemini initialized successfully")
+            logger.info(f"Gemini initialized successfully with model: {model_name}")
         except Exception as e:
             logger.error("Failed to initialize Gemini: %s", str(e), exc_info=True)
             raise
@@ -748,13 +750,13 @@ class LLMClient:
             
         try:
             openai.api_key = self.api_key
-            self.model_name = os.getenv("OPENAI_MODEL_NAME", "gpt-4")
+            self.model_name = self.model_name or os.getenv("OPENAI_MODEL_NAME", "gpt-4")  # Use self.model_name
             self.generation_config = {
                 'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
                 'max_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
                 'top_p': float(os.getenv("LLM_TOP_P", "0.8")),
             }
-            logger.info("OpenAI initialized successfully")
+            logger.info(f"OpenAI initialized successfully with model: {self.model_name}")
         except Exception as e:
             logger.error("Failed to initialize OpenAI: %s", str(e), exc_info=True)
             raise
@@ -766,12 +768,12 @@ class LLMClient:
             
         try:
             self.client = anthropic.Anthropic(api_key=self.api_key)
-            self.model_name = os.getenv("ANTHROPIC_MODEL_NAME", "claude-3-opus-20240229")
+            self.model_name = self.model_name or os.getenv("ANTHROPIC_MODEL_NAME", "claude-3-opus-20240229")  # Use self.model_name
             self.generation_config = {
                 'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
                 'max_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
             }
-            logger.info("Anthropic Claude initialized successfully")
+            logger.info(f"Anthropic Claude initialized successfully with model: {self.model_name}")
         except Exception as e:
             logger.error("Failed to initialize Anthropic: %s", str(e), exc_info=True)
             raise
@@ -783,12 +785,12 @@ class LLMClient:
             
         try:
             self.client = MistralClient(api_key=self.api_key)
-            self.model_name = os.getenv("MISTRAL_MODEL_NAME", "mistral-large-latest")
+            self.model_name = self.model_name or os.getenv("MISTRAL_MODEL_NAME", "mistral-large-latest")  # Use self.model_name
             self.generation_config = {
                 'temperature': float(os.getenv("LLM_TEMPERATURE", "0.3")),
                 'max_tokens': int(os.getenv("LLM_MAX_TOKENS", "2048")),
             }
-            logger.info("Mistral initialized successfully")
+            logger.info(f"Mistral initialized successfully with model: {self.model_name}")
         except Exception as e:
             logger.error("Failed to initialize Mistral: %s", str(e), exc_info=True)
             raise
@@ -1362,3 +1364,15 @@ except Exception as e:
     logger.error("Failed to create LLM client singleton: %s", str(e), exc_info=True)
     # Create a fallback client that can be replaced later
     llm_client = None
+
+def get_default_client():
+    global llm_client
+    if llm_client is None:
+        try:
+            # Try to create without API key - it can be added later
+            llm_client = LLMClient(api_key=None, provider="gemini", model_name=None)
+            logger.info("LLM client singleton created successfully")
+        except Exception as e:
+            logger.warning(f"Failed to create default LLM client: {e}")
+            llm_client = None
+    return llm_client
