@@ -962,11 +962,18 @@ func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
 	// Training Data API
 	setupTrainingDataRoutes(router, km)
 
+    // User Profile API
+    SetupProfileRoutes(router)
+
+    // API Keys Management
+    SetupAPIKeysRoutes(router)
+
 	// Chat History API with training data support
 	setupChatRoutes(router, km)
 
 	// Auth routes with OAuth support
 	setupAuthRoutes(router, db)
+
 
 	// Health check endpoint
 	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
