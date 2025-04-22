@@ -8,13 +8,10 @@ import DemoSection from "./components/sections/DemoSection";
 import SupportedPlatforms from "./components/sections/SupportedPlatforms";
 import EarlyAccessSection from "./components/sections/EarlyAccessSection";
 import Footer from "./components/layout/Footer";
-import { AuthProvider } from "./components/auth/AuthContext";
+import { AuthProvider }from "./components/auth/AuthContext";
 import AuthModalWrapper from "./components/auth/AuthModalWrapper";
 import ChatInterface from "./pages/ChatInterface";
 import OAuthCallback from "./components/auth/OAuthCallback";
-import Profile from "./pages/Profile";
-import Docs from "./pages/Docs";
-import About from "./pages/About";
 
 const theme = createTheme({
   palette: {
@@ -108,9 +105,6 @@ function App() {
               />
               <Route path="/chat" element={<ChatInterface />} />
               <Route path="/oauth-callback" element={<OAuthCallback />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/docs" element={<Docs />} />
-              <Route path="/about" element={<About />} />
             </Routes>
           </div>
         </ThemeProvider>

@@ -8,11 +8,11 @@ import {
   Button,
   Box,
   IconButton,
-  useMediaQuery,
   Drawer,
   List,
   ListItem,
   ListItemText,
+  useMediaQuery,
 } from "@mui/material"
 import { styled, useTheme } from "@mui/material/styles"
 import { Apps, ArrowOutward, Menu as MenuIcon } from "@mui/icons-material"
@@ -47,8 +47,8 @@ const Navigation = () => {
 
   const navItems = [
     { text: "Features", href: "#features" },
-    { text: "Docs", href: "/docs" },
-    { text: "About", href: "/about" },
+    { text: "Docs", href: "#docs" },
+    { text: "About", href: "#about" },
   ]
 
   const drawer = (
@@ -126,9 +126,7 @@ const Navigation = () => {
   return (
     <StyledAppBar position="floating">
       <Toolbar sx={{ justifyContent: "space-between" }}>
-        <RouterLink to="/" style={{ textDecoration: 'none' }}>
-          <Box component="img" src="/logo.png" alt="SQL AI" sx={{ height: 62 }} />
-        </RouterLink>
+        <Box component="img" src="/logo.png" alt="SQL AI" sx={{ height: 62 }} />
 
         {/* Desktop Navigation */}
         {!isMobile && (

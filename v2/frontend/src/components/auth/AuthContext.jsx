@@ -37,8 +37,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Open auth modal
-  const openAuthModal = (mode = "signin") => {
-    setAuthMode(mode);
+  const openAuthModal = () => {
     setAuthModalOpen(true);
   };
 
@@ -53,47 +52,119 @@ export const AuthProvider = ({ children }) => {
   };
 
   // Sign in function
-  const signIn = async (email, password) => {
-    setError(null);
-    try {
-      console.log("Making sign-in request to:", "/api/auth/signin");
-      
-      const response = await fetch("/api/auth/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
-      
-      console.log("Received response:", response.status, response.statusText);
-      
-      // Check if response is JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        // Log the HTML response for debugging
-        const textResponse = await response.text();
-        console.error("Received non-JSON response:", textResponse);
-        throw new Error("Server returned an invalid response format");
-      }
+//   const signIn = async (email, password) => {
+//     setError(null);
+//     try {
+//       const response = await fetch("/api/auth/signin", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         credentials: "include",
+//         body: JSON.stringify({ email, password }),
+//       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Sign in failed");
-      }
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message || "Sign in failed");
+//       }
 
-      const data = await response.json();
-      setUser(data.user);
-      closeAuthModal();
-      navigate("/chat");
-      return data;
-    } catch (err) {
-      console.error("Login error:", err);
-      setError(err.message);
-      throw err;
+//       const data = await response.json();
+//       setUser(data.user);
+//       closeAuthModal();
+//       navigate("/chat"); // Redirect to chat screen
+//       return data;
+//     } catch (err) {
+//       setError(err.message);
+//       throw err;
+//     }
+//   };
+// const signIn = async (email, password) => {
+//     setError(null);
+//     try {
+//       // First check if the API is available
+//       try {
+//         const checkResponse = await fetch("/api/health", { method: "GET" });
+//         if (!checkResponse.ok) {
+//           throw new Error("API server not available");
+//         }
+//       } catch (err) {
+//         console.error("API server check failed:", err);
+//         throw new Error("Backend API service is not running. Please start the server.");
+//       }
+      
+//       const response = await fetch("/api/auth/signin", {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         credentials: "include",
+//         body: JSON.stringify({ email, password }),
+//       });
+  
+//       // Handle non-JSON responses
+//       const contentType = response.headers.get("content-type");
+//       if (!contentType || !contentType.includes("application/json")) {
+//         console.error("Received non-JSON response:", await response.text());
+//         throw new Error("Invalid response from server");
+//       }
+  
+//       if (!response.ok) {
+//         const errorData = await response.json();
+//         throw new Error(errorData.message || "Sign in failed");
+//       }
+  
+//       const data = await response.json();
+//       setUser(data.user);
+//       closeAuthModal();
+//       navigate("/chat");
+//       return data;
+//     } catch (err) {
+//       setError(err.message);
+//       throw err;
+//     }
+//   };
+const signIn = async (email, password) => {
+  setError(null);
+  try {
+    console.log("Making sign-in request to:", "/api/auth/signin");
+    
+    const response = await fetch("/api/auth/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+    });
+    
+    console.log("Received response:", response.status, response.statusText);
+    
+    // Check if response is JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      // Log the HTML response for debugging
+      const textResponse = await response.text();
+      console.error("Received non-JSON response:", textResponse);
+      throw new Error("Server returned an invalid response format");
     }
-  };
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Sign in failed");
+    }
+
+    const data = await response.json();
+    setUser(data.user);
+    closeAuthModal();
+    navigate("/chat");
+    return data;
+  } catch (err) {
+    console.error("Login error:", err);
+    setError(err.message);
+    throw err;
+  }
+};
 
   // Sign up function
   const signUp = async (email, password, name) => {
@@ -128,27 +199,14 @@ export const AuthProvider = ({ children }) => {
   const oauthSignIn = async (provider, code, redirectUri) => {
     setError(null);
     try {
-      console.log(`Making OAuth sign-in request for provider: ${provider} with code length: ${code.length}`);
-      
       const response = await fetch(`/api/auth/oauth/${provider}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
         },
         credentials: "include",
         body: JSON.stringify({ code, redirect_uri: redirectUri }),
       });
-
-      console.log(`OAuth response status: ${response.status}`);
-      
-      // Check content type
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const textResponse = await response.text();
-        console.error("OAuth non-JSON response:", textResponse);
-        throw new Error("Server returned an invalid response format");
-      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -158,56 +216,29 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       setUser(data.user);
       closeAuthModal();
-      navigate("/chat");
+      navigate("/chat"); // Redirect to chat screen
       return data;
     } catch (err) {
-      console.error("OAuth sign-in error:", err);
       setError(err.message);
       throw err;
     }
   };
 
-  // Get OAuth URL function - improved for better error handling
+  // Get OAuth URL function
   const getOAuthUrl = async (provider, redirectUri) => {
     try {
-      const encodedRedirectUri = encodeURIComponent(redirectUri);
-      const url = `/api/auth/oauth/url/${provider}?redirect_uri=${encodedRedirectUri}`;
-      console.log("Making OAuth URL request to:", url);
-      
-      const response = await fetch(url, {
+      const response = await fetch(`/api/auth/oauth/url/${provider}?redirect_uri=${encodeURIComponent(redirectUri)}`, {
         method: "GET",
-        headers: {
-          "Accept": "application/json",
-        },
       });
 
-      console.log("OAuth URL response status:", response.status);
-
       if (!response.ok) {
-        console.error(`OAuth URL error: ${response.status}`);
-        const errorText = await response.text();
-        console.error("Error response text:", errorText);
-        throw new Error(`Failed to get OAuth URL: ${response.status}`);
-      }
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const text = await response.text();
-        console.error("Non-JSON OAuth URL response:", text);
-        throw new Error("Invalid response format from OAuth URL endpoint");
+        throw new Error("Failed to get OAuth URL");
       }
 
       const data = await response.json();
-      console.log("OAuth URL response data:", data);
-      
-      if (!data.url) {
-        throw new Error("OAuth URL not provided in response");
-      }
-      
       return data.url;
     } catch (err) {
-      console.error("getOAuthUrl error:", err);
-      setError("Failed to get authorization URL. Please try again later.");
+      setError(err.message);
       throw err;
     }
   };

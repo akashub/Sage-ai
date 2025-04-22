@@ -1,5 +1,3 @@
-"use client"
-
 import React, { useState, useEffect } from "react";
 import { 
   Box, 
@@ -17,8 +15,7 @@ import {
   useTheme,
   Collapse,
   Badge,
-  Tooltip,
-  Avatar
+  Tooltip
 } from "@mui/material";
 import { 
   Add as AddIcon, 
@@ -35,19 +32,16 @@ import {
   DataObject as DataObjectIcon,
   Refresh as RefreshIcon,
   Upload as UploadIcon,
-  ChevronLeft as ChevronLeftIcon,
-  Person as PersonIcon
+  ChevronLeft as ChevronLeftIcon
 } from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import TrainingDataSection from "./TrainingDataSection";
 import { fetchChatHistory, createChat, deleteChat } from "../../utils/api";
-import { useAuth } from "../auth/AuthContext";
 
 // Fixed width for the drawer
 const drawerWidth = 300;
 
 const ChatSidebar = ({ selectedChat, setSelectedChat, onNewChat }) => {
-  const { user } = useAuth();
   const [chatHistory, setChatHistory] = useState([]);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -153,247 +147,130 @@ const ChatSidebar = ({ selectedChat, setSelectedChat, onNewChat }) => {
   }, []);
 
   const drawerContent = (
-    <Box 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        bgcolor: '#2F3136'
-      }}
-    >
-      {/* Header */}
+    <>
       <Box sx={{ 
         p: 2, 
         display: "flex", 
         alignItems: "center", 
-        justifyContent: "space-between",
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+        justifyContent: "space-between" 
       }}>
-        <Typography variant="h6" sx={{ fontWeight: "bold", color: 'white' }}>
-          Sage Chat
-        </Typography>
+        <Typography variant="h6" sx={{ fontWeight: "bold" }}>Sage Chat</Typography>
         {isMobile ? (
-          <IconButton onClick={handleDrawerToggle} sx={{ color: 'white' }}>
+          <IconButton onClick={handleDrawerToggle}>
             <CloseIcon />
           </IconButton>
         ) : (
-          <IconButton onClick={handleSidebarToggle} sx={{ color: 'white' }}>
+          <IconButton onClick={handleSidebarToggle}>
             <ChevronLeftIcon />
           </IconButton>
         )}
       </Box>
 
-      {/* Main Content Area */}
-      <Box sx={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {/* Action Buttons */}
-        <Box sx={{ p: 2 }}>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            fullWidth
-            sx={{ 
-              mb: 2,
-              bgcolor: theme.palette.primary.main,
-              '&:hover': {
-                bgcolor: theme.palette.primary.dark,
-              }
-            }}
-            onClick={handleNewChat}
-            disabled={loading}
-          >
-            New Analysis
-          </Button>
-
-          <Button
-            component={Link}
-            to="/"
-            variant="text"
-            fullWidth
-            startIcon={<HomeIcon />}
-            sx={{ 
-              justifyContent: "flex-start", 
-              textTransform: "none",
-              color: 'white',
-              '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.1)'
-              }
-            }}
-          >
-            Back to Home
-          </Button>
-        </Box>
-
-        <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
-        
-        {/* Training Data Section */}
-        <TrainingDataSection />
-        
-        <Divider sx={{ bgcolor: 'rgba(255, 255, 255, 0.1)' }} />
-        
-        {/* Chat History Section */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          <Box sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'space-between', 
-            px: 2, 
-            py: 1 
-          }}>
-            <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
-              <HistoryIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 1 }} />
-              Recent Sessions
-            </Typography>
-            <Tooltip title="Refresh">
-              <IconButton 
-                size="small" 
-                onClick={loadChatHistory} 
-                disabled={loading}
-                sx={{ color: 'white' }}
-              >
-                <RefreshIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-          
-          <List sx={{ 
-            flex: 1, 
-            overflow: 'auto',
-            px: 1
-          }}>
-            {chatHistory.length === 0 ? (
-              <ListItem>
-                <ListItemText
-                  primary="No recent chats"
-                  primaryTypographyProps={{ 
-                    variant: 'body2', 
-                    color: 'text.secondary',
-                    align: 'center'
-                  }}
-                />
-              </ListItem>
-            ) : (
-              chatHistory.map((chat) => (
-                <ListItem 
-                  disablePadding 
-                  key={chat.id}
-                  secondaryAction={
-                    <IconButton 
-                      edge="end" 
-                      size="small" 
-                      onClick={(e) => handleDeleteChat(chat.id, e)}
-                      sx={{ 
-                        opacity: 0, 
-                        '&:hover': { opacity: 1 },
-                        color: 'white'
-                      }}
-                    >
-                      <CloseIcon fontSize="small" />
-                    </IconButton>
-                  }
-                  sx={{ 
-                    '&:hover .MuiIconButton-root': { 
-                      opacity: 0.7 
-                    },
-                    mb: 0.5
-                  }}
-                >
-                  <ListItemButton
-                    selected={selectedChat?.id === chat.id}
-                    onClick={() => handleSelectChat(chat)}
-                    sx={{ 
-                      borderRadius: 1,
-                      '&.Mui-selected': {
-                        bgcolor: 'rgba(88, 101, 242, 0.3)',
-                        '&:hover': {
-                          bgcolor: 'rgba(88, 101, 242, 0.4)',
-                        }
-                      },
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 255, 255, 0.1)'
-                      }
-                    }}
-                  >
-                    <ListItemIcon sx={{ minWidth: 36, color: 'white' }}>
-                      <TableChartIcon fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText 
-                      primary={chat.title || "Untitled Chat"}
-                      secondary={
-                        <Box component="span" sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="caption" component="span" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                            {chat.file || "No file"}
-                          </Typography>
-                          <Typography variant="caption" component="span" sx={{ ml: 1, color: 'rgba(255, 255, 255, 0.5)' }}>
-                            {new Date(chat.timestamp).toLocaleDateString()}
-                          </Typography>
-                        </Box>
-                      }
-                      primaryTypographyProps={{ 
-                        noWrap: true,
-                        sx: { color: 'white' }
-                      }}
-                      secondaryTypographyProps={{ noWrap: true }}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              ))
-            )}
-          </List>
-        </Box>
-      </Box>
-
-      {/* Profile Button */}
-      <Box 
-        sx={{ 
-          mt: 'auto',
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
-          p: 1
-        }}
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        fullWidth
+        sx={{ mx: 2, mb: 2 }}
+        onClick={handleNewChat}
+        disabled={loading}
       >
+        New Analysis
+      </Button>
+
+      <Box sx={{ px: 2, mb: 1 }}>
         <Button
-          fullWidth
-          variant="text"
           component={Link}
-          to="/profile"
-          sx={{
-            justifyContent: 'flex-start',
-            color: 'white',
-            p: 1,
-            borderRadius: 1,
-            transition: theme => theme.transitions.create(['background-color', 'transform'], {
-              duration: theme.transitions.duration.shorter,
-            }),
-            '&:hover': {
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-              transform: 'translateX(4px)'
-            }
-          }}
+          to="/"
+          variant="text"
+          fullWidth
+          startIcon={<HomeIcon />}
+          sx={{ justifyContent: "flex-start", textTransform: "none" }}
         >
-          <Avatar 
-            sx={{ 
-              width: 32, 
-              height: 32, 
-              mr: 1,
-              bgcolor: theme.palette.primary.main,
-              transition: 'transform 0.2s',
-              '&:hover': {
-                transform: 'scale(1.1)'
-              }
-            }}
-          >
-            {user?.name?.[0]?.toUpperCase() || 'U'}
-          </Avatar>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {user?.name || 'User'}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-              {user?.plan || 'Free Plan'}
-            </Typography>
-          </Box>
+          Back to Home
         </Button>
       </Box>
-    </Box>
+
+      <Divider />
+      
+      {/* Training Data Section */}
+      <TrainingDataSection />
+      
+      <Divider />
+      
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1 }}>
+        <Typography variant="subtitle2" sx={{ color: "text.secondary" }}>
+          <HistoryIcon fontSize="small" sx={{ verticalAlign: "middle", mr: 1 }} />
+          Recent Sessions
+        </Typography>
+        <Tooltip title="Refresh">
+          <IconButton size="small" onClick={loadChatHistory} disabled={loading}>
+            <RefreshIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+      
+      <List sx={{ maxHeight: '40vh', overflow: 'auto' }}>
+        {chatHistory.length === 0 ? (
+          <ListItem>
+            <ListItemText
+              primary="No recent chats"
+              primaryTypographyProps={{ 
+                variant: 'body2', 
+                color: 'text.secondary',
+                align: 'center'
+              }}
+            />
+          </ListItem>
+        ) : (
+          chatHistory.map((chat) => (
+            <ListItem 
+              disablePadding 
+              key={chat.id}
+              secondaryAction={
+                <IconButton 
+                  edge="end" 
+                  size="small" 
+                  onClick={(e) => handleDeleteChat(chat.id, e)}
+                  sx={{ opacity: 0, '&:hover': { opacity: 1 } }}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              }
+              sx={{ 
+                '&:hover .MuiIconButton-root': { 
+                  opacity: 0.7 
+                } 
+              }}
+            >
+              <ListItemButton
+                selected={selectedChat?.id === chat.id}
+                onClick={() => handleSelectChat(chat)}
+                sx={{ borderRadius: 1, mx: 1 }}
+              >
+                <ListItemIcon sx={{ minWidth: 36 }}>
+                  <TableChartIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText 
+                  primary={chat.title || "Untitled Chat"}
+                  secondary={
+                    <Box component="span" sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <Typography variant="caption" component="span">
+                        {chat.file || "No file"}
+                      </Typography>
+                      <Typography variant="caption" component="span" sx={{ ml: 1 }}>
+                        {new Date(chat.timestamp).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  }
+                  primaryTypographyProps={{ noWrap: true }}
+                  secondaryTypographyProps={{ noWrap: true }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))
+        )}
+      </List>
+    </>
   );
 
   // Collapsed sidebar content

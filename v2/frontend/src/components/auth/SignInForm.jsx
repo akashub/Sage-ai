@@ -5,7 +5,7 @@ import { Box, TextField, Button, Link, InputAdornment, IconButton, Typography, C
 import { Visibility, VisibilityOff, Google as GoogleIcon, GitHub as GitHubIcon } from "@mui/icons-material"
 import { useAuth } from "./AuthContext"
 
-const SignInForm = ({ onSignUpClick, onForgotClick }) => {
+const SignInForm = ({ onSignUpClick }) => {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: "",
@@ -20,6 +20,7 @@ const SignInForm = ({ onSignUpClick, onForgotClick }) => {
     
     try {
       await signIn(formData.email, formData.password)
+      // Redirect happens automatically in the AuthContext
     } catch (err) {
       console.error("Sign in failed:", err)
     } finally {
@@ -39,7 +40,7 @@ const SignInForm = ({ onSignUpClick, onForgotClick }) => {
     try {
       const redirectUri = `${window.location.origin}/oauth-callback`
       const authUrl = await getOAuthUrl(provider, redirectUri)
-      window.location.href = authUrl
+      window.location.href = authUrl // Redirect to OAuth provider
     } catch (err) {
       console.error(`OAuth sign in with ${provider} failed:`, err)
     }
@@ -96,25 +97,13 @@ const SignInForm = ({ onSignUpClick, onForgotClick }) => {
         }}
       />
       
-      <Box sx={{ textAlign: "right", mb: 2 }}>
-        <Link 
-          component="button" 
-          type="button" 
-          onClick={onForgotClick} 
-          disabled={isSubmitting}
-          sx={{ color: "rgba(255, 255, 255, 0.7)" }}
-        >
-          Forgot password?
-        </Link>
-      </Box>
-      
       <Button
         fullWidth
         type="submit"
         variant="contained"
         disabled={isSubmitting}
         sx={{
-          mt: 2,
+          mt: 3,
           mb: 2,
           bgcolor: "black",
           color: "white",
@@ -126,19 +115,43 @@ const SignInForm = ({ onSignUpClick, onForgotClick }) => {
         {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Sign In"}
       </Button>
       
+      <Typography variant="body2" align="center" sx={{ mb: 2 }}>
+        Or sign in with
+      </Typography>
+      
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<GoogleIcon />}
+          onClick={() => handleOAuthSignIn("google")}
+          disabled={isSubmitting}
+          sx={{ width: "48%" }}
+        >
+          Google
+        </Button>
+        
+        <Button
+          variant="outlined"
+          startIcon={<GitHubIcon />}
+          onClick={() => handleOAuthSignIn("github")}
+          disabled={isSubmitting}
+          sx={{ width: "48%" }}
+        >
+          GitHub
+        </Button>
+      </Box>
+      
       <Box sx={{ textAlign: "center" }}>
-        <Typography variant="body2" sx={{ color: "rgba(255, 255, 255, 0.7)" }}>
-          Don't have an account?{" "}
-          <Link 
-            component="button" 
-            type="button" 
-            onClick={onSignUpClick} 
-            disabled={isSubmitting}
-            sx={{ color: "rgba(255, 255, 255, 1.0)" }}
-          >
-            Sign up
-          </Link>
-        </Typography>
+        Don't have an account?{" "}
+        <Link 
+          component="button" 
+          type="button" 
+          onClick={onSignUpClick} 
+          disabled={isSubmitting}
+          sx={{ color: "rgba(255, 255, 255, 1.0)" }}
+        >
+          Sign up
+        </Link>
       </Box>
     </Box>
   )
