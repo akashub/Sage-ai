@@ -1,0 +1,53 @@
+{
+  "id": "chat_1745299812553197000",
+  "title": "Walmart_stocks_dataset.csv Analysis",
+  "messages": [
+    {
+      "type": "system",
+      "text": "CSV file \"Walmart_stocks_dataset.csv\" uploaded successfully. Found columns: Date, Open, High, Low, Close, Adj Close, Volume",
+      "timestamp": "2025-04-22T05:30:12.548Z",
+      "file": "Walmart_stocks_dataset.csv"
+    },
+    {
+      "type": "user",
+      "text": "top 3 best sessions",
+      "sender": "user",
+      "timestamp": "2025-04-22T05:31:21.327Z"
+    },
+    {
+      "type": "ai",
+      "text": "Query processed successfully.",
+      "sender": "ai",
+      "timestamp": "2025-04-22T05:31:25.986Z",
+      "results": [
+        {
+          "Close": 0.021484000608325005,
+          "Date": "1972-08-25",
+          "High": 0.0215659998357296,
+          "Low": 0.02115900069475174,
+          "Open": 0.02115900069475174,
+          "Volume": 7526400
+        },
+        {
+          "Close": 0.021402999758720398,
+          "Date": "1972-08-28",
+          "High": 0.021647000685334206,
+          "Low": 0.021402999758720398,
+          "Open": 0.021484000608325005,
+          "Volume": 2918400
+        },
+        {
+          "Close": 0.02115900069475174,
+          "Date": "1972-08-29",
+          "High": 0.02132200077176094,
+          "Low": 0.02115900069475174,
+          "Open": 0.02132200077176094,
+          "Volume": 5836800
+        }
+      ],
+      "generatedQuery": "SELECT Date, High, Low, Open, Close, `Adj Close`, Volume FROM sessions ORDER BY High DESC LIMIT 3"
+    }
+  ],
+  "timestamp": "2025-04-22T01:30:12.553202-04:00",
+  "lastUpdated": "2025-04-22T05:31:25.986Z"
+}

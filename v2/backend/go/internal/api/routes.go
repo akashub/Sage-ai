@@ -1776,7 +1776,7 @@ func setupAuthRoutes(router *mux.Router, db *sql.DB) {
 			"user": map[string]interface{}{
 				"id":          "user123",
 				"email":       req.Email,
-				"name":        "Aakash Singh",
+				"name":        "Yash Kishore",
 				"createdAt":   time.Now(),
 				"lastLoginAt": time.Now(),
 			},
@@ -2000,8 +2000,8 @@ func setupAuthRoutes(router *mux.Router, db *sql.DB) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"id":          "user123",
-			"name":        "Aakash Singh",
-			"email":       "aakashsinghas03@gmail.com",
+			"name":        "Yash Kishore",
+			"email":       "kishore.yash28043002@gmail.com",
 			"createdAt":   time.Now(),
 			"lastLoginAt": time.Now(),
 		})

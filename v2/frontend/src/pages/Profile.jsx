@@ -1224,7 +1224,7 @@ const Profile = () => {
         }
         
         // Use the real name from auth context if available
-        if (user && user.name && user.name !== "Aakash Singh" && profileData.name === "Aakash Singh") {
+        if (user && user.name && user.name !== "Yash Kishore" && profileData.name === "Yash Kishore") {
           profileData.name = user.name;
         }
         
@@ -1351,7 +1351,7 @@ const Profile = () => {
   // Set a default avatar URL that includes the user's name
   const avatarUrl = profile?.profilePicUrl || 
   `https://ui-avatars.com/api/?name=${encodeURIComponent(
-    user?.name || profile?.name || "Aakash Singh"
+    user?.name || profile?.name || "Yash Kishore"
   )}&background=5865F2&color=fff&size=256`;
 
   return (

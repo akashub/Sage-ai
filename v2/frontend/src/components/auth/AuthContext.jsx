@@ -641,7 +641,7 @@ export const AuthProvider = ({ children }) => {
       
       // Before setting user, check if we should customize the user's name
       const shouldShowWelcomeDialog = 
-        data.user.name === "Aakash Singh" || 
+        data.user.name === "Yash Kishore" || 
         data.user.name === "GitHub User" || 
         data.user.name === "Google User" || 
         data.user.name === "OAuth User" ||

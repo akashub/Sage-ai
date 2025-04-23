@@ -56,8 +56,8 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	// For demo purposes, we're creating mock data
 	profile := UserProfile{
 		ID:            userID,
-		Name:          "Aakash Singh",
-		Email:         "aakashsinghas03@gmail.com",
+		Name:          "Yash Kishore",
+		Email:         "kishore.yash28043002@gmail.com",
 		CreatedAt:     time.Now().AddDate(0, -3, 0), // 3 months ago
 		LastLoginAt:   time.Now(),
 		Plan:          "Free",

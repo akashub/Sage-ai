@@ -334,7 +334,7 @@ const WelcomeDialog = ({ open, onClose }) => {
       open={open} 
       onClose={(event, reason) => {
         // Only allow closing if not a generic user
-        if (user && !['Aakash Singh', 'GitHub User', 'Google User', 'OAuth User'].includes(user.name)) {
+        if (user && !['Yash Kishore', 'GitHub User', 'Google User', 'OAuth User'].includes(user.name)) {
           onClose();
         }
       }}

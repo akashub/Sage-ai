@@ -1,0 +1,42 @@
+{
+  "id": "chat_1745381215114237000",
+  "userId": "user123",
+  "title": "Walmart_stocks_dataset.csv Analysis",
+  "messages": [
+    {
+      "type": "system",
+      "text": "CSV file \"Walmart_stocks_dataset.csv\" uploaded successfully. Found columns: Date, Open, High, Low, Close, Adj Close, Volume",
+      "timestamp": "2025-04-23T04:06:55.113Z",
+      "file": "Walmart_stocks_dataset.csv"
+    },
+    {
+      "type": "user",
+      "text": "Top 3 sessions",
+      "sender": "user",
+      "timestamp": "2025-04-23T04:08:19.916Z"
+    },
+    {
+      "type": "ai",
+      "text": "Query processed successfully.",
+      "sender": "ai",
+      "timestamp": "2025-04-23T04:08:24.056Z",
+      "results": [
+        {
+          "Date": "1972-08-25",
+          "Volume": 7526400
+        },
+        {
+          "Date": "1972-08-28",
+          "Volume": 2918400
+        },
+        {
+          "Date": "1972-08-29",
+          "Volume": 5836800
+        }
+      ],
+      "generatedQuery": "SELECT Date, Volume FROM your_table_name ORDER BY Volume DESC LIMIT 3"
+    }
+  ],
+  "timestamp": "2025-04-23T00:06:55.11424-04:00",
+  "lastUpdated": "2025-04-23T04:08:24.056Z"
+}
