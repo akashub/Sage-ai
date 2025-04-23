@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sage-ai-v2/internal/llm"
 	"strings"
 	"testing"
 
@@ -105,6 +106,160 @@ func TestUploadHandler(t *testing.T) {
 	success, ok := response["success"].(bool)
 	assert.True(t, ok, "Response should have a success field")
 	assert.True(t, success, "Upload should be successful")
+}
+
+// TestValidateAPIKeyHandler tests the API key validation endpoint
+func TestValidateAPIKeyHandler(t *testing.T) {
+	// Test cases for different providers
+	testCases := []struct {
+		name           string
+		provider       llm.LLMProvider
+		apiKey         string
+		expectedStatus int
+		expectedValid  bool
+	}{
+		{
+			name:           "Gemini Provider",
+			provider:       llm.ProviderGemini,
+			apiKey:         "test-gemini-key",
+			expectedStatus: http.StatusOK,
+			expectedValid:  true,
+		},
+		{
+			name:           "OpenAI Provider",
+			provider:       llm.ProviderOpenAI,
+			apiKey:         "test-openai-key",
+			expectedStatus: http.StatusOK,
+			expectedValid:  true,
+		},
+		{
+			name:           "Anthropic Provider",
+			provider:       llm.ProviderAnthropic,
+			apiKey:         "test-anthropic-key",
+			expectedStatus: http.StatusOK,
+			expectedValid:  true,
+		},
+		{
+			name:           "Mistral Provider",
+			provider:       llm.ProviderMistral,
+			apiKey:         "test-mistral-key",
+			expectedStatus: http.StatusOK,
+			expectedValid:  true,
+		},
+		{
+			name:           "Empty API Key",
+			provider:       llm.ProviderGemini,
+			apiKey:         "",
+			expectedStatus: http.StatusBadRequest,
+			expectedValid:  false,
+		},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create a test server
+			server := NewTestServer(t)
+			defer server.Close()
+			
+			// Create a request
+			reqBody := llm.LLMConfig{
+				Provider: tc.provider,
+				APIKey:   tc.apiKey,
+			}
+			
+			reqBodyBytes, _ := json.Marshal(reqBody)
+			req, _ := http.NewRequest("POST", "/api/validate-api-key", bytes.NewBuffer(reqBodyBytes))
+			req.Header.Set("Content-Type", "application/json")
+			
+			// Create a response recorder
+			rr := httptest.NewRecorder()
+			
+			// Send the request through the router
+			server.Router.ServeHTTP(rr, req)
+			
+			// Check status code
+			assert.Equal(t, tc.expectedStatus, rr.Code, "Handler returned wrong status code")
+			
+			// For successful responses, check the "valid" field
+			if tc.expectedStatus == http.StatusOK {
+				var response map[string]bool
+				err := json.Unmarshal(rr.Body.Bytes(), &response)
+				require.NoError(t, err)
+				
+				assert.Equal(t, tc.expectedValid, response["valid"], "Unexpected 'valid' value in response")
+			}
+		})
+	}
+}
+
+// TestQueryWithLLMConfig tests query handling with different LLM configurations
+func TestQueryWithLLMConfig(t *testing.T) {
+	// Test different provider configs
+	testCases := []struct {
+		name     string
+		provider llm.LLMProvider
+		apiKey   string
+	}{
+		{"Gemini Provider", llm.ProviderGemini, "gemini-key"},
+		{"OpenAI Provider", llm.ProviderOpenAI, "openai-key"},
+		{"Anthropic Provider", llm.ProviderAnthropic, "anthropic-key"},
+		{"Mistral Provider", llm.ProviderMistral, "mistral-key"},
+	}
+	
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create a test server
+			server := NewTestServer(t)
+			defer server.Close()
+			
+			// Create a query request with LLM config
+			reqBody := map[string]interface{}{
+				"query":           "What is the weather?",
+				"csvPath":         "weather.csv",
+				"useKnowledgeBase": true,
+				"options": map[string]interface{}{
+					"llmConfig": map[string]interface{}{
+						"provider": string(tc.provider),
+						"api_key":  tc.apiKey,
+					},
+				},
+			}
+			
+			reqBodyBytes, _ := json.Marshal(reqBody)
+			req, _ := http.NewRequest("POST", "/api/query", bytes.NewBuffer(reqBodyBytes))
+			req.Header.Set("Content-Type", "application/json")
+			
+			// Create a response recorder
+			rr := httptest.NewRecorder()
+			
+			// Send the request through the router
+			server.Router.ServeHTTP(rr, req)
+			
+			// Check status code
+			assert.Equal(t, http.StatusOK, rr.Code, "Handler should return 200 OK")
+			
+			// Parse response
+			var response map[string]interface{}
+			err := json.Unmarshal(rr.Body.Bytes(), &response)
+			require.NoError(t, err)
+			
+			// Verify SQL field exists
+			assert.Contains(t, response, "sql", "Response should contain SQL")
+			
+			// Verify results field exists and is non-empty
+			results, ok := response["results"].([]interface{})
+			assert.True(t, ok, "Results should be an array")
+			assert.NotEmpty(t, results, "Results should not be empty")
+			
+			// Verify the mock orchestrator received and used the LLM config
+			// This is an indirect test - checking that the result contains expected content
+			// that would only be present if the config was correctly passed
+			
+			// The actual check depends on how your mock orchestrator behaves with LLM configs
+			// You could look for specific patterns in the SQL or results that indicate
+			// the LLM config was used
+		})
+	}
 }
 
 // Helper for checking string map contains
