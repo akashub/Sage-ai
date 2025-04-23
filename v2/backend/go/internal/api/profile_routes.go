@@ -56,8 +56,8 @@ func GetProfileHandler(w http.ResponseWriter, r *http.Request) {
 	// For demo purposes, we're creating mock data
 	profile := UserProfile{
 		ID:            userID,
-		Name:          "Test User",
-		Email:         "user@example.com",
+		Name:          "Aakash Singh",
+		Email:         "aakashsinghas03@gmail.com",
 		CreatedAt:     time.Now().AddDate(0, -3, 0), // 3 months ago
 		LastLoginAt:   time.Now(),
 		Plan:          "Free",
@@ -138,7 +138,7 @@ func getUserChats(userID string) []Chat {
 func calculateTotalQueries(userID string) int {
 	totalQueries := 0
 	userChats := getUserChats(userID)
-	
+
 	for _, chat := range userChats {
 		// Count user messages as queries
 		for _, msg := range chat.Messages {
@@ -147,6 +147,6 @@ func calculateTotalQueries(userID string) int {
 			}
 		}
 	}
-	
+
 	return totalQueries
 }
