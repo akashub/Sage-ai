@@ -962,6 +962,12 @@ func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
 	// Training Data API
 	setupTrainingDataRoutes(router, km)
 
+	// User Profile API
+	SetupProfileRoutes(router)
+
+	// API Keys Management
+	SetupAPIKeysRoutes(router)
+
 	// Chat History API with training data support
 	setupChatRoutes(router, km)
 
@@ -1770,7 +1776,7 @@ func setupAuthRoutes(router *mux.Router, db *sql.DB) {
 			"user": map[string]interface{}{
 				"id":          "user123",
 				"email":       req.Email,
-				"name":        "Test User",
+				"name":        "Aakash Singh",
 				"createdAt":   time.Now(),
 				"lastLoginAt": time.Now(),
 			},
@@ -1994,8 +2000,8 @@ func setupAuthRoutes(router *mux.Router, db *sql.DB) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]interface{}{
 			"id":          "user123",
-			"name":        "Test User",
-			"email":       "user@example.com",
+			"name":        "Aakash Singh",
+			"email":       "aakashsinghas03@gmail.com",
 			"createdAt":   time.Now(),
 			"lastLoginAt": time.Now(),
 		})

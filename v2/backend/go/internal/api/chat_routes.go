@@ -31,6 +31,7 @@ type ChatMessage struct {
 // Chat represents a chat session
 type Chat struct {
 	ID          string        `json:"id"`
+	UserID         string        `json:"userId,omitempty"` //added this for Profile functionality
 	Title       string        `json:"title"`
 	File        string        `json:"file,omitempty"`
 	FilePath    string        `json:"filePath,omitempty"`
@@ -437,6 +438,32 @@ func updateChatTrainingDataSimple(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetChatsHandler returns all chats
+// func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
+//     // Set CORS headers
+//     w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+    
+//     // Handle OPTIONS request
+//     if r.Method == "OPTIONS" {
+//         w.WriteHeader(http.StatusOK)
+//         return
+//     }
+    
+//     // Existing code continues...
+//     chats := chatStore.ListChats()
+    
+//     // For list view, we don't need to include all messages
+//     for i := range chats {
+//         // Keep only the most recent message for preview
+//         if len(chats[i].Messages) > 0 {
+//             chats[i].Messages = []ChatMessage{chats[i].Messages[len(chats[i].Messages)-1]}
+//         }
+//     }
+    
+//     w.Header().Set("Content-Type", "application/json")
+//     json.NewEncoder(w).Encode(chats)
+// }
 func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
     // Set CORS headers
     w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -449,59 +476,117 @@ func GetChatsHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
     
-    // Existing code continues...
-    chats := chatStore.ListChats()
+    // Get user ID from query params or auth token
+    userID := r.URL.Query().Get("userId")
+    if userID == "" {
+        // In a real implementation, this would come from the JWT token
+        userID = "user123" // Default for testing
+    }
+    
+    // Get all chats
+    allChats := chatStore.ListChats()
+    
+    // Filter by user ID if provided
+    var filteredChats []Chat
+	// In a real implementation, you would check chat.UserID == userID
+	// For now, to make it work with existing data, we'll include all chats
+	filteredChats = append(filteredChats, allChats...)
     
     // For list view, we don't need to include all messages
-    for i := range chats {
+    for i := range filteredChats {
         // Keep only the most recent message for preview
-        if len(chats[i].Messages) > 0 {
-            chats[i].Messages = []ChatMessage{chats[i].Messages[len(chats[i].Messages)-1]}
+        if len(filteredChats[i].Messages) > 0 {
+            filteredChats[i].Messages = []ChatMessage{filteredChats[i].Messages[len(filteredChats[i].Messages)-1]}
         }
     }
     
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(chats)
+    json.NewEncoder(w).Encode(filteredChats)
 }
 
-// CreateChatHandler creates a new chat
-func CreateChatHandler(w http.ResponseWriter, r *http.Request) {
 
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+// // CreateChatHandler creates a new chat
+// func CreateChatHandler(w http.ResponseWriter, r *http.Request) {
+
+// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+//     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+//     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+
+// 	var chatData map[string]interface{}
+// 	if err := json.NewDecoder(r.Body).Decode(&chatData); err != nil {
+// 		http.Error(w, "Invalid request body", http.StatusBadRequest)
+// 		return
+// 	}
+	
+// 	// Generate ID
+// 	chatID := fmt.Sprintf("chat_%d", time.Now().UnixNano())
+	
+// 	// Create chat
+// 	chat := Chat{
+// 		ID:        chatID,
+// 		Title:     fmt.Sprintf("New Chat %s", time.Now().Format("2006-01-02")),
+// 		CreatedAt: time.Now(),
+// 	}
+	
+// 	// Set title if provided
+// 	if title, ok := chatData["title"].(string); ok && title != "" {
+// 		chat.Title = title
+// 	}
+	
+// 	// Add chat
+// 	if err := chatStore.AddChat(chat); err != nil {
+// 		logger.ErrorLogger.Printf("Failed to create chat: %v", err)
+// 		http.Error(w, "Failed to create chat", http.StatusInternalServerError)
+// 		return
+// 	}
+	
+// 	// Return the new chat
+// 	w.Header().Set("Content-Type", "application/json")
+// 	json.NewEncoder(w).Encode(chat)
+// }
+func CreateChatHandler(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
     w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-	var chatData map[string]interface{}
-	if err := json.NewDecoder(r.Body).Decode(&chatData); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-	
-	// Generate ID
-	chatID := fmt.Sprintf("chat_%d", time.Now().UnixNano())
-	
-	// Create chat
-	chat := Chat{
-		ID:        chatID,
-		Title:     fmt.Sprintf("New Chat %s", time.Now().Format("2006-01-02")),
-		CreatedAt: time.Now(),
-	}
-	
-	// Set title if provided
-	if title, ok := chatData["title"].(string); ok && title != "" {
-		chat.Title = title
-	}
-	
-	// Add chat
-	if err := chatStore.AddChat(chat); err != nil {
-		logger.ErrorLogger.Printf("Failed to create chat: %v", err)
-		http.Error(w, "Failed to create chat", http.StatusInternalServerError)
-		return
-	}
-	
-	// Return the new chat
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(chat)
+    var chatData map[string]interface{}
+    if err := json.NewDecoder(r.Body).Decode(&chatData); err != nil {
+        http.Error(w, "Invalid request body", http.StatusBadRequest)
+        return
+    }
+    
+    // Get user ID from the request or auth token
+    userID := "user123" // Default for testing
+    if id, ok := chatData["userId"].(string); ok && id != "" {
+        userID = id
+    }
+    
+    // Generate ID
+    chatID := fmt.Sprintf("chat_%d", time.Now().UnixNano())
+    
+    // Create chat
+    chat := Chat{
+        ID:        chatID,
+        UserID:    userID, // Associate with user
+        Title:     fmt.Sprintf("New Chat %s", time.Now().Format("2006-01-02")),
+        CreatedAt: time.Now(),
+    }
+    
+    // Set title if provided
+    if title, ok := chatData["title"].(string); ok && title != "" {
+        chat.Title = title
+    }
+    
+    // Add chat
+    if err := chatStore.AddChat(chat); err != nil {
+        logger.ErrorLogger.Printf("Failed to create chat: %v", err)
+        http.Error(w, "Failed to create chat", http.StatusInternalServerError)
+        return
+    }
+    
+    // Return the new chat
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(chat)
 }
 
 // GetChatHandler returns a specific chat
