@@ -59,10 +59,6 @@ func SetupRoutes(db *sql.DB, orch *orchestrator.Orchestrator) *mux.Router {
 		handleFileUpload(w, r)
 	}).Methods("POST", "OPTIONS")
 
-	// router.HandleFunc("/api/validate-api-key", func(w http.ResponseWriter, r *http.Request) {
-	//     validateAPIKeyHandler(w, r)
-	// }).Methods("POST", "OPTIONS")
-	// Update in SetupRoutes function
 	router.HandleFunc("/api/validate-api-key", func(w http.ResponseWriter, r *http.Request) {
 		validateAPIKeyHandler(w, r)
 	}).Methods("POST", "OPTIONS")
