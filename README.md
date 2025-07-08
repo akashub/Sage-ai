@@ -13,7 +13,7 @@ Find our demo videos for each Sprint here! [Sprint Demo videos](https://uflorida
 Data analysts and business users often struggle with writing complex SQL queries. While they understand what information they need, translating natural language to SQL is challenging and time-consuming. Existing solutions either lack accuracy, require extensive training, or are limited to specific database schemas. Sage.AI addresses these challenges by providing an intuitive, adaptive interface that handles query generation, execution, and result presentation.
 
 ## Team Members
-- **Aakash Singh** - Backend Dev
+- **Aakash Singh** - Lead and Architect, ML and Backend Dev, Frontend Dev
 - **Bommidi Nitin Reddy** - Backend Dev
 - **Sudiksha Rajavaram** - Frontend Dev
 - **Yash Kishore** - Frontend Dev
